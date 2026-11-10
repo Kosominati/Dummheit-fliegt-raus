@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="de" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="no-referrer">
+  <title>Der Dümmste fliegt</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Permanent+Marker&display=swap" rel="stylesheet">
+  <style>
+    .fun-font { font-family: 'Permanent Marker', cursive, sans-serif; }
+    .glass { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    .heart.lost { filter: grayscale(100%); opacity: 0.3; transform: scale(0.9); transition: all 0.3s ease; }
+    @keyframes pulse-slow { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .animate-pulse-slow { animation: 3s cubic-bezier(0.4, 0, 0.6, 1) infinite pulse-slow; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-full flex flex-col antialiased selection:bg-rose-500 selection:text-white">
+
+  <!-- TOP HEADER -->
+  <header class="w-full glass sticky top-0 z-50 px-4 py-3 flex items-center justify-between border-b border-slate-800/80 shadow-lg">
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-rose-600 flex items-center justify-center shadow-md shadow-rose-500/20">
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      </div>
+      <div>
+        <h1 class="text-lg md:text-xl font-extrabold tracking-tight fun-font bg-gradient-to-r from-amber-400 via-rose-400 to-purple-400 bg-clip-text text-transparent">Der Dümmste fliegt</h1>
+        <p class="text-xs text-slate-400 flex items-center gap-1.5"><span id="header-timer-badge" class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> <span id="header-status-text">Lobby & Vorbereitung</span></p>
+      </div>
+    </div>
+    
+    <div class="flex items-center space-x-2">
+      <!-- Audio Toggle -->
+      <button onclick="toggleAudio()" id="audio-btn" class="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700/60 transition shadow-sm" title="Sound an/aus">
+        🔊
+      </button>
+      <!-- Admin Button (Passwortgeschützt mit 'minati') -->
+      <button onclick="openAdminModal()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-amber-500/40 text-amber-400 font-semibold rounded-xl text-xs md:text-sm flex items-center gap-2 shadow-sm transition hover:border-amber-500">
+        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+        Admin
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 flex flex-col items-center justify-center p-4 md:p-6 max-w-5xl mx-auto w-full">
+
+    <!-- SCREEN 1: LOBBY & PROFIL-SETUP -->
+    <div id="screen-lobby" class="w-full max-w-3xl glass rounded-3xl p-5 md:p-8 shadow-2xl">
+      <div class="text-center mb-6">
+        <span class="px-3 py-1 bg-amber-500/20 text-amber-400 rounded-full text-xs font-bold uppercase tracking-wider">Anime Lobby & Charakterwahl</span>
+        <h2 class="text-2xl md:text-3xl font-extrabold mt-2 fun-font text-white">Wähle deinen Charakter</h2>
+        <p class="text-slate-400 text-xs md:text-sm mt-1">Klicke einen freien Charakter an. Der erste Spieler ist der Anführer (mit Krone)!</p>
+      </div>
+
+      <!-- EIGENE SPIELERKARTE VORSCHAU -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 mb-6 flex flex-col sm:flex-row items-center gap-5 shadow-inner">
+        <div class="relative group">
+          <div id="preview-border-ring" class="w-24 h-24 rounded-2xl overflow-hidden border-4 border-rose-500 shadow-lg shadow-rose-500/20 bg-slate-950">
+            <img id="preview-avatar-img" src="" alt="Avatar" class="w-full h-full object-cover">
+          </div>
+          <span id="preview-leader-badge" class="absolute -top-2 -right-2 bg-amber-500 text-slate-950 font-bold px-2 py-0.5 rounded-full text-xs shadow-md flex items-center gap-1 hidden">👑 Anführer</span>
+        </div>
+        <div class="flex-1 w-full text-center sm:text-left">
+          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Dein Spielername</label>
+          <div class="flex gap-2">
+            <input type="text" id="player-name-input" value="Kämpfer" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white font-semibold focus:outline-none focus:border-rose-500 text-sm">
+            <button onclick="resetPlayerName()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-medium transition" title="Auf Standard zurücksetzen">↺</button>
+          </div>
+          <div id="team-assignment-badge" class="mt-2 text-xs font-bold text-slate-400 hidden">Team: Keins</div>
+        </div>
+      </div>
+
+      <!-- CHARAKTER-AUSWAHL GALERIE -->
+      <div class="mb-6">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider">Wähle einen Charakter (Graue sind bereits belegt)</h3>
+          <button onclick="openAdminModalWithTab('avatars')" class="text-xs text-amber-400 hover:underline flex items-center gap-1">⚙️ Namen & Bilder im Admin anpassen</button>
+        </div>
+        <div id="lobby-avatars-container" class="space-y-4 max-h-72 overflow-y-auto pr-1">
+          <!-- Dynamisch gerendert -->
+        </div>
+      </div>
+
+      <!-- MITSPIELER / BOTS IN DER LOBBY -->
+      <div class="mb-6 bg-slate-950/60 rounded-2xl p-4 border border-slate-800">
+        <div class="flex items-center justify-between mb-3">
+          <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Mitspieler in der Runde (<span id="player-count">1</span>)</h4>
+          <button onclick="addBotPlayer()" class="px-3 py-1.5 bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-500/30 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+            👤 + Bot hinzufügen
+          </button>
+        </div>
+        <div id="lobby-players-grid" class="flex flex-wrap gap-3">
+          <!-- Dynamische Spieler-Karten -->
+        </div>
+      </div>
+
+      <!-- ANFÜHRER / LOBBY OPTIONEN -->
+      <div id="leader-options-box" class="mb-6 bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 hidden">
+        <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-3 flex items-center gap-2">👑 Anführer-Einstellungen (Für diese Runde)</h4>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs text-slate-300 mb-1">Timer pro Spieler</label>
+            <select id="leader-timer-select" onchange="updateLeaderSettings()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
+              <option value="5">5 Sekunden</option>
+              <option value="7" selected>7 Sekunden</option>
+              <option value="10">10 Sekunden</option>
+              <option value="15">15 Sekunden</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-300 mb-1">Start-Leben</label>
+            <select id="leader-lives-select" onchange="updateLeaderSettings()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
+              <option value="1">1 Leben</option>
+              <option value="2">2 Leben</option>
+              <option value="3" selected>3 Herzen</option>
+              <option value="5">5 Herzen</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-300 mb-1">Teams Modus</label>
+            <select id="leader-teams-select" onchange="updateLeaderSettings()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
+              <option value="off" selected>Aus (Jeder gegen Jeden)</option>
+              <option value="2">2 Teams (Rot vs Blau)</option>
+              <option value="4">4 Teams (Rot, Blau, Grün, Gelb)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTION BUTTONS -->
+      <div class="flex flex-col sm:flex-row gap-3">
+        <button onclick="copyInviteLink()" class="flex-1 px-5 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold rounded-xl text-sm transition flex items-center justify-center gap-2">
+          🔗 Direkt-Link kopieren
+        </button>
+        <button onclick="startMatch()" class="flex-2 px-6 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-extrabold rounded-xl text-base shadow-lg shadow-emerald-500/20 transition transform active:scale-95 flex items-center justify-center gap-2">
+          🚀 Spiel starten!
+        </button>
+      </div>
+    </div>
+
+    <!-- SCREEN 2: FRAGE- & ANTWORT-PHASE -->
+    <div id="screen-game" class="w-full max-w-3xl glass rounded-3xl p-5 md:p-8 shadow-2xl hidden">
+      <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-800">
+        <div>
+          <span id="game-round-badge" class="text-xs font-bold text-amber-400 uppercase tracking-wider">Runde 1 / Frage 1</span>
+          <h3 id="active-player-title" class="text-xl md:text-2xl font-extrabold text-white mt-0.5">Spieler ist am Zug</h3>
+        </div>
+        <div class="flex items-center gap-3">
+          <button onclick="togglePauseGame()" id="pause-btn" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-slate-700">
+            ⏸️ Pause
+          </button>
+          <div class="px-4 py-2 bg-rose-500/20 border border-rose-500/40 rounded-2xl flex items-center gap-2">
+            <span class="text-rose-400 font-mono font-bold text-lg" id="game-timer-display">07</span>
+            <span class="text-xs text-rose-300 font-medium uppercase">sek</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-6 flex flex-col sm:flex-row items-center gap-5 shadow-inner">
+        <div id="game-active-avatar-wrap" class="w-20 h-20 rounded-2xl overflow-hidden border-3 border-rose-500 bg-slate-950 flex-shrink-0">
+          <img id="game-active-avatar-img" src="" alt="Avatar" class="w-full h-full object-cover">
+        </div>
+        <div class="flex-1 text-center sm:text-left">
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Frage für <span id="game-current-player-name" class="text-amber-400 font-bold">Name</span></span>
+          <p id="game-question-text" class="text-lg md:text-xl font-bold text-white mt-1 leading-snug">Lade Frage...</p>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Deine Antwort (Sprechen oder Tippen)</label>
+          <div class="flex gap-2">
+            <input type="text" id="player-answer-input" placeholder="Antwort einsprechen oder eintippen..." class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white font-semibold focus:outline-none focus:border-rose-500 text-sm md:text-base">
+            <button onclick="toggleSpeechRecognition()" id="mic-btn" class="px-4 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 rounded-xl font-bold text-sm transition flex items-center gap-2" title="Spracheingabe starten">
+              🎙️ Sprechen
+            </button>
+          </div>
+        </div>
+
+        <button onclick="submitPlayerAnswer()" class="w-full py-3.5 bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white font-extrabold rounded-xl text-base shadow-lg shadow-rose-500/20 transition">
+          Antwort abgeben & weiter ➔
+        </button>
+      </div>
+    </div>
+
+    <!-- SCREEN 3: VOTING-RUNDE -->
+    <div id="screen-voting" class="w-full max-w-3xl glass rounded-3xl p-5 md:p-8 shadow-2xl hidden">
+      <div class="text-center mb-6">
+        <span class="px-3 py-1 bg-rose-500/20 text-rose-400 rounded-full text-xs font-bold uppercase tracking-wider">Abstimmungs-Runde (30s)</span>
+        <h2 class="text-2xl md:text-3xl font-extrabold mt-2 fun-font text-white">Wer hatte die schlechteste Antwort?</h2>
+        <p class="text-slate-400 text-xs md:text-sm mt-1">Wähle den Spieler, dessen Antwort am schwächsten war.</p>
+        <div class="mt-3 inline-flex items-center gap-2 bg-slate-900 border border-slate-800 px-4 py-1.5 rounded-full">
+          <span class="text-xs text-slate-400">Verbleibende Zeit:</span>
+          <span id="voting-timer-display" class="font-mono font-bold text-amber-400 text-lg">30s</span>
+        </div>
+      </div>
+
+      <div id="voting-answers-grid" class="space-y-3 mb-6 max-h-96 overflow-y-auto pr-1"></div>
+
+      <div class="flex justify-between items-center pt-4 border-t border-slate-800">
+        <span id="voting-status-info" class="text-xs text-slate-400">Warten auf Abstimmungen...</span>
+        <button onclick="forceEndVoting()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 rounded-xl text-xs font-bold transition">
+          ⚡ Voting vorzeitig beenden
+        </button>
+      </div>
+    </div>
+
+    <!-- SCREEN 4: ERGEBNIS -->
+    <div id="screen-result" class="w-full max-w-3xl glass rounded-3xl p-5 md:p-8 shadow-2xl hidden text-center">
+      <span class="px-3 py-1 bg-amber-500/20 text-amber-400 rounded-full text-xs font-bold uppercase tracking-wider">Ergebnis-Auswertung</span>
+      <h2 class="text-2xl md:text-3xl font-extrabold mt-2 fun-font text-white" id="result-headline">Das Urteil ist gefallen!</h2>
+      <p id="result-subtext" class="text-slate-400 text-sm mt-1 mb-6">Wer die meisten Stimmen erhalten hat, verliert ein Leben.</p>
+
+      <div id="result-summary-box" class="space-y-3 mb-6 text-left"></div>
+
+      <button onclick="nextRoundOrGame()" class="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-extrabold rounded-xl text-base shadow-lg transition">
+        Nächste Runde starten ➔
+      </button>
+    </div>
+
+  </main>
+
+  <!-- ADMIN MODAL -->
+  <div id="admin-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+    <div class="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="px-6 py-4 bg-slate-950/80 border-b border-slate-800 flex items-center justify-between">
+        <h3 class="font-extrabold text-base text-amber-400 flex items-center gap-2">🛠️ Admin-Bereich (Der Dümmste fliegt)</h3>
+        <button onclick="closeAdminModal()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+      </div>
+
+      <div id="admin-login-box" class="p-8 text-center space-y-4 my-auto">
+        <div class="w-16 h-16 bg-amber-500/20 text-amber-400 rounded-2xl mx-auto flex items-center justify-center text-2xl font-bold">🔒</div>
+        <h4 class="text-lg font-bold text-white">Passwort erforderlich</h4>
+        <p class="text-xs text-slate-400 max-w-xs mx-auto">Bitte gib das Admin-Passwort ein (minati).</p>
+        <div class="max-w-xs mx-auto flex gap-2">
+          <input type="password" id="admin-password-input" placeholder="Passwort..." class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-amber-500" onkeydown="if(event.key==='Enter')checkAdminPassword()">
+          <button onclick="checkAdminPassword()" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-sm transition">Login</button>
+        </div>
+      </div>
+
+      <div id="admin-dashboard" class="flex-1 overflow-y-auto p-6 space-y-6 hidden">
+        <div class="flex border-b border-slate-800 gap-4">
+          <button onclick="switchAdminTab('avatars')" id="tab-btn-avatars" class="pb-3 text-sm font-bold text-amber-400 border-b-2 border-amber-400 transition">Avatare & Kategorien</button>
+          <button onclick="switchAdminTab('questions')" id="tab-btn-questions" class="pb-3 text-sm font-bold text-slate-400 hover:text-white transition">Fragen-Katalog</button>
+          <button onclick="switchAdminTab('settings')" id="tab-btn-settings" class="pb-3 text-sm font-bold text-slate-400 hover:text-white transition">Spieleinstellungen</button>
+        </div>
+
+        <div id="admin-tab-avatars" class="space-y-4">
+          <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800">
+            <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Bilder vom Gerät hochladen</h4>
+            <input type="file" id="admin-file-input" multiple accept="image/*" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-amber-500 file:text-slate-950 hover:file:bg-amber-400 cursor-pointer mb-3" onchange="handleAdminFileUpload(event)">
+          </div>
+          <div>
+            <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3">Deine Charaktere</h4>
+            <div id="admin-avatars-list" class="space-y-3"></div>
+          </div>
+        </div>
+
+        <div id="admin-tab-questions" class="space-y-4 hidden">
+          <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3">
+            <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Neue Frage hinzufügen</h4>
+            <input type="text" id="new-q-text" placeholder="Fragetext..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs">
+            <input type="text" id="new-q-answer" placeholder="Antwort..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs">
+            <button onclick="addNewQuestion()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition">Frage speichern</button>
+          </div>
+          <div>
+            <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Gespeicherte Fragen (<span id="admin-q-count">0</span>)</h4>
+            <div id="admin-questions-list" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+          </div>
+        </div>
+
+        <div id="admin-tab-settings" class="space-y-4 hidden">
+          <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3">
+            <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Globale Konfiguration</h4>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Standard Timer (Sekunden)</label>
+              <input type="number" id="admin-timer-input" value="7" min="3" max="30" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Standard Leben</label>
+              <input type="number" id="admin-lives-input" value="3" min="1" max="10" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs">
+            </div>
+            <button onclick="saveAdminSettings()" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs transition">Einstellungen übernehmen</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIK (Mit fest fixierten Standard-Daten als Fallback, damit online nie etwas leer bleibt) -->
+  <script>
+    let state = {
+      isAdminLoggedIn: false,
+      players: [
+        { id: 'p1', name: 'Kämpfer', avatar: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/naruto/images/0/09/Naruto_Part_II.png/revision/latest/scale-to-width-down/300?cb=20210623111624', lives: 3, maxLives: 3, isLeader: true, isBot: false, franchise: 'Naruto' }
+      ],
+      selectedAvatarIndex: 0,
+      customAvatars: [
+        { id: 'n1', name: 'Naruto Uzumaki', franchise: 'Naruto', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/naruto/images/0/09/Naruto_Part_II.png/revision/latest/scale-to-width-down/300?cb=20210623111624' },
+        { id: 'n2', name: 'Sasuke Uchiha', franchise: 'Naruto', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/naruto/images/2/21/Sasuke_Part_II.png/revision/latest/scale-to-width-down/300?cb=20210623111634' },
+        { id: 'n3', name: 'Sakura Haruno', franchise: 'Naruto', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/naruto/images/6/64/Sakura_Part_II.png/revision/latest/scale-to-width-down/300?cb=20170726102611' },
+        { id: 'n4', name: 'Kakashi Hatake', franchise: 'Naruto', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/naruto/images/2/27/Kakashi_Hatake.png/revision/latest/scale-to-width-down/300?cb=20210623111704' },
+        { id: 'n5', name: 'Jiraiya', franchise: 'Naruto', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/naruto/images/2/28/Jiraiya_Infobox.png/revision/latest/scale-to-width-down/300?cb=20150914144358' },
+        { id: 'n6', name: 'Tsunade', franchise: 'Naruto', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/naruto/images/e/ee/Tsunade_Part_II.png/revision/latest/scale-to-width-down/300?cb=20160205213233' },
+        { id: 'n7', name: 'Pain', franchise: 'Naruto', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/naruto/images/7/77/Pain_Infobox.png/revision/latest/scale-to-width-down/300?cb=20160126233405' },
+        { id: 'n8', name: 'Itachi Uchiha', franchise: 'Naruto', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/naruto/images/b/bb/Itachi_Part_II.png/revision/latest/scale-to-width-down/300?cb=20160125192823' },
+        { id: 'n9', name: 'Obito Uchiha', franchise: 'Naruto', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/naruto/images/9/9c/Obito_Uchiha.png/revision/latest/scale-to-width-down/300?cb=20160126231940' },
+        { id: 'n10', name: 'Madara Uchiha', franchise: 'Naruto', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/naruto/images/b/b5/Madara_Uchiha.png/revision/latest/scale-to-width-down/300?cb=20160126232938' },
+        { id: 'op1', name: 'Monkey D. Ruffy', franchise: 'One Piece', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/onepiece/images/6/6d/Monkey_D._Luffy_Anime_Post_Timeskip_Infobox.png/revision/latest/scale-to-width-down/300?cb=20190522193910' },
+        { id: 'op2', name: 'Roronoa Zoro', franchise: 'One Piece', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/onepiece/images/d/df/Roronoa_Zoro_Anime_Post_Timeskip_Infobox.png/revision/latest/scale-to-width-down/300?cb=20211112151745' },
+        { id: 'op3', name: 'Nami', franchise: 'One Piece', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/onepiece/images/6/68/Nami_Anime_Post_Timeskip_Infobox.png/revision/latest/scale-to-width-down/300?cb=20211112151745' },
+        { id: 'op4', name: 'Sanji', franchise: 'One Piece', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/onepiece/images/9/96/Sanji_Anime_Post_Timeskip_Infobox.png/revision/latest/scale-to-width-down/300?cb=20211112151745' },
+        { id: 'op5', name: 'Lysop', franchise: 'One Piece', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/onepiece/images/e/e0/Usopp_Anime_Post_Timeskip_Infobox.png/revision/latest/scale-to-width-down/300?cb=20211112151745' },
+        { id: 'op6', name: 'Nico Robin', franchise: 'One Piece', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/onepiece/images/d/d2/Nico_Robin_Anime_Post_Timeskip_Infobox.png/revision/latest/scale-to-width-down/300?cb=20211112151745' },
+        { id: 'op7', name: 'Portgas D. Ace', franchise: 'One Piece', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/onepiece/images/b/b3/Portgas_D._Ace_Anime_Infobox.png/revision/latest/scale-to-width-down/300?cb=20211112151745' },
+        { id: 'op8', name: 'Sabo', franchise: 'One Piece', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/onepiece/images/3/3c/Sabo_Anime_Infobox.png/revision/latest/scale-to-width-down/300?cb=20211112151745' },
+        { id: 'op9', name: 'Sir Crocodile', franchise: 'One Piece', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/onepiece/images/a/a2/Crocodile_Anime_Infobox.png/revision/latest/scale-to-width-down/300?cb=20211112151745' },
+        { id: 'op10', name: 'Buggy', franchise: 'One Piece', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/onepiece/images/9/91/Buggy_Anime_Infobox.png/revision/latest/scale-to-width-down/300?cb=20211112151745' },
+        { id: 'db1', name: 'Son Goku', franchise: 'Dragon Ball', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/dragonball/images/e/e3/Goku_DBS_Broly.png/revision/latest/scale-to-width-down/300?cb=20181112211933' },
+        { id: 'db2', name: 'Vegeta', franchise: 'Dragon Ball', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/dragonball/images/2/28/Vegeta_DBS.png/revision/latest/scale-to-width-down/300?cb=20191007231454' },
+        { id: 'db3', name: 'Son Gohan', franchise: 'Dragon Ball', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/dragonball/images/4/42/Gohan_Super_Hero.png/revision/latest/scale-to-width-down/300?cb=20220613204910' },
+        { id: 'db4', name: 'Trunks', franchise: 'Dragon Ball', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/dragonball/images/8/8c/Future_Trunks_DBS.png/revision/latest/scale-to-width-down/300?cb=20170425011112' },
+        { id: 'db5', name: 'Piccolo', franchise: 'Dragon Ball', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/dragonball/images/3/3e/Piccolo_Super_Hero.png/revision/latest/scale-to-width-down/300?cb=20220613205022' },
+        { id: 'db6', name: 'Freezer', franchise: 'Dragon Ball', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/dragonball/images/1/18/Frieza_DBS_Broly.png/revision/latest/scale-to-width-down/300?cb=20181112212345' },
+        { id: 'db7', name: 'Cell', franchise: 'Dragon Ball', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/dragonball/images/3/38/Cell_Perfect_Form_Render.png/revision/latest/scale-to-width-down/300?cb=20200831154512' },
+        { id: 'db8', name: 'Kid Boo', franchise: 'Dragon Ball', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/dragonball/images/f/f2/Kid_Buu_Dokkan.png/revision/latest/scale-to-width-down/300?cb=20200615174512' },
+        { id: 'db9', name: 'Muten Roshi', franchise: 'Dragon Ball', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/dragonball/images/b/bf/Master_Roshi_DBS.png/revision/latest/scale-to-width-down/300?cb=20170324151245' },
+        { id: 'db10', name: 'Bulma', franchise: 'Dragon Ball', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/dragonball/images/1/12/Bulma_DBS.png/revision/latest/scale-to-width-down/300?cb=20170425011112' },
+        { id: 'bl1', name: 'Ichigo Kurosaki', franchise: 'Bleach', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/bleach/images/4/47/Ichigo_TYBW.png/revision/latest/scale-to-width-down/300?cb=20221010164215' },
+        { id: 'bl2', name: 'Rukia Kuchiki', franchise: 'Bleach', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/bleach/images/2/22/Rukia_TYBW.png/revision/latest/scale-to-width-down/300?cb=20221010164215' },
+        { id: 'ds1', name: 'Tanjiro Kamado', franchise: 'Demon Slayer', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/kimetsu-no-yaiba/images/8/85/Tanjiro_Kamado_Anime.png/revision/latest/scale-to-width-down/300?cb=20210712213247' },
+        { id: 'ds2', name: 'Nezuko Kamado', franchise: 'Demon Slayer', img: 'https://images.weserv.nl/?url=https://static.wikia.nocookie.net/kimetsu-no-yaiba/images/8/81/Nezuko_Kamado_Anime.png/revision/latest/scale-to-width-down/300?cb=20210712213247' }
+      ],
+      questions: [
+        { id: 1, text: "Welche Einheit misst elektrische Spannung?", answer: "Volt" },
+        { id: 2, text: "Welches Tier ist das Wappentier der USA?", answer: "Weißkopfseeadler" },
+        { id: 3, text: "Wie heißt der höchste Berg Afrikas?", answer: "Kilimandscharo (Kibo)" },
+        { id: 4, text: "Welche Frucht hat einen harten Kern und orangenfarbenes Fruchtfleisch?", answer: "Aprikose (oder Mango)" },
+        { id: 5, text: "Wie heißt das größte Organ im Körper des Menschen?", answer: "Haut" }
+      ],
+      settings: { timerDuration: 7, startLives: 3, teamsMode: 'off' },
+      match: {
+        activePlayerIndex: 0, currentQuestionIndex: 0, roundNumber: 1,
+        timerInterval: null, timeLeft: 7, isPaused: false, phase: 'lobby',
+        answersGiven: {}, votesGiven: {}, votingTimeLeft: 30, votingInterval: null
+      },
+      soundEnabled: true
+    };
+
+    window.onload = function() {
+      // Priorisiere localStorage, falls dort etwas vorhanden ist, ansonsten nimm die festen Standardwerte
+      const saved = localStorage.getItem('der_duemmste_fliegt_state_v14');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed.customAvatars && parsed.customAvatars.length > 0) state.customAvatars = parsed.customAvatars;
+          if (parsed.questions && parsed.questions.length > 0) state.questions = parsed.questions;
+          if (parsed.settings) state.settings = parsed.settings;
+        } catch(e) {}
+      }
+      renderLobby();
+      setupSpeechRecognition();
+    };
+
+    function saveStateToStorage() {
+      localStorage.setItem('der_duemmste_fliegt_state_v14', JSON.stringify({
+        customAvatars: state.customAvatars,
+        questions: state.questions,
+        settings: state.settings
+      }));
+    }
+
+    function playSound(type) {
+      if (!state.soundEnabled) return;
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        if (type === 'click') {
+          osc.frequency.setValueAtTime(400, ctx.currentTime);
+          gain.gain.setValueAtTime(0.05, ctx.currentTime);
+          osc.start(); osc.stop(ctx.currentTime + 0.05);
+        } else if (type === 'buzzer') {
+          osc.frequency.setValueAtTime(150, ctx.currentTime);
+          gain.gain.setValueAtTime(0.1, ctx.currentTime);
+          osc.start(); osc.stop(ctx.currentTime + 0.3);
+        } else if (type === 'success') {
+          osc.frequency.setValueAtTime(600, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(900, ctx.currentTime + 0.1);
+          gain.gain.setValueAtTime(0.1, ctx.currentTime);
+          osc.start(); osc.stop(ctx.currentTime + 0.2);
+        }
+      } catch(e) {}
+    }
+
+    function toggleAudio() {
+      state.soundEnabled = !state.soundEnabled;
+      document.getElementById('audio-btn').textContent = state.soundEnabled ? '🔊' : '🔇';
+    }
+
+    function renderLobby() {
+      const p1 = state.players[0];
+      if (p1) {
+        p1.name = document.getElementById('player-name-input').value || p1.name;
+        document.getElementById('preview-avatar-img').src = p1.avatar;
+        document.getElementById('preview-leader-badge').classList.toggle('hidden', !p1.isLeader);
+      }
+
+      document.getElementById('player-count').textContent = state.players.length;
+      document.getElementById('leader-options-box').classList.toggle('hidden', !p1 || !p1.isLeader);
+
+      const container = document.getElementById('lobby-avatars-container');
+      container.innerHTML = '';
+
+      const franchiseOrder = ['Naruto', 'One Piece', 'Dragon Ball', 'Bleach', 'Demon Slayer', 'Eigene Uploads', 'Sonstige'];
+      const franchises = {};
+      
+      state.customAvatars.forEach((av, idx) => {
+        let cat = av.franchise || 'Sonstige';
+        if (!franchises[cat]) franchises[cat] = [];
+        franchises[cat].push({ ...av, originalIndex: idx });
+      });
+
+      const sortedKeys = Object.keys(franchises).sort((a, b) => {
+        let idxA = franchiseOrder.indexOf(a);
+        let idxB = franchiseOrder.indexOf(b);
+        if (idxA === -1) idxA = 999;
+        if (idxB === -1) idxB = 999;
+        return idxA - idxB;
+      });
+
+      sortedKeys.forEach(franchiseName => {
+        const avatars = franchises[franchiseName];
+        const groupDiv = document.createElement('div');
+        groupDiv.className = 'space-y-2';
+        groupDiv.innerHTML = `<h4 class="text-xs font-bold text-amber-400 uppercase tracking-wider">${franchiseName}</h4>`;
+        
+        const grid = document.createElement('div');
+        grid.className = 'grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2.5';
+
+        avatars.forEach(av => {
+          const isTakenBy = state.players.find(p => p.avatar === av.img && p.id !== 'p1');
+          const isSelected = p1 && p1.avatar === av.img;
+
+          const card = document.createElement('div');
+          card.className = `relative rounded-xl overflow-hidden border-2 cursor-pointer transition p-1.5 flex flex-col items-center bg-slate-900 ${isSelected ? 'border-amber-400 ring-2 ring-amber-400/40' : isTakenBy ? 'opacity-40 border-slate-800 cursor-not-allowed' : 'border-slate-700 hover:border-slate-500'}`;
+          
+          card.innerHTML = `
+            <div class="w-14 h-14 rounded-lg overflow-hidden bg-slate-950 mb-1 flex items-center justify-center">
+              <img src="${av.img}" alt="${av.name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/150x150/1e293b/cbd5e1?text=${encodeURIComponent(av.name.substring(0,3))}';">
+            </div>
+            <span class="text-[10px] font-bold text-center text-slate-200 truncate w-full">${av.name}</span>
+            ${isTakenBy ? `<span class="absolute inset-0 bg-slate-950/70 flex items-center justify-center text-[10px] font-bold text-rose-400 text-center p-1">🔒 ${isTakenBy.name}</span>` : ''}
+          `;
+
+          if (!isTakenBy) {
+            card.onclick = () => selectAvatar(av.img, av.name);
+          }
+          grid.appendChild(card);
+        });
+
+        groupDiv.appendChild(grid);
+        container.appendChild(groupDiv);
+      });
+
+      const playersGrid = document.getElementById('lobby-players-grid');
+      playersGrid.innerHTML = '';
+      state.players.forEach(p => {
+        const pCard = document.createElement('div');
+        pCard.className = 'bg-slate-900 border border-slate-800 rounded-xl p-2.5 flex items-center gap-3 relative';
+        pCard.innerHTML = `
+          <div class="w-10 h-10 rounded-lg overflow-hidden bg-slate-950 relative">
+            <img src="${p.avatar}" class="w-full h-full object-cover">
+            ${p.isLeader ? '<span class="absolute -top-1 -right-1 text-xs">👑</span>' : ''}
+          </div>
+          <div>
+            <span class="text-xs font-bold text-white block">${p.name} ${p.id === 'p1' ? '(Du)' : ''}</span>
+            <span class="text-[10px] text-amber-400">${p.isLeader ? 'Anführer' : p.isBot ? 'Bot' : 'Mitspieler'}</span>
+          </div>
+          ${!p.isLeader && p1.isLeader ? `<button onclick="transferLeader('${p.id}')" class="ml-2 text-[10px] bg-amber-500/20 text-amber-300 px-2 py-1 rounded hover:bg-amber-500/30">👑 geben</button>` : ''}
+        `;
+        playersGrid.appendChild(pCard);
+      });
+    }
+
+    function selectAvatar(imgUrl, charName) {
+      playSound('click');
+      state.players[0].avatar = imgUrl;
+      document.getElementById('player-name-input').value = charName;
+      renderLobby();
+    }
+
+    function resetPlayerName() {
+      playSound('click');
+      document.getElementById('player-name-input').value = 'Kämpfer';
+      renderLobby();
+    }
+
+    function addBotPlayer() {
+      playSound('click');
+      const availableAvatars = state.customAvatars.filter(av => !state.players.find(p => p.avatar === av.img));
+      const randomAv = availableAvatars.length > 0 ? availableAvatars[Math.floor(Math.random() * availableAvatars.length)] : state.customAvatars[0];
+      const botNames = ['SasukeFan99', 'KageBunshin', 'SenpaiGamer', 'BankaiMaster', 'Hokage2026', 'Jinchuriki'];
+      const randomName = botNames[Math.floor(Math.random() * botNames.length)] + ' (Bot)';
+
+      state.players.push({
+        id: 'bot_' + Date.now(),
+        name: randomName,
+        avatar: randomAv.img,
+        lives: state.settings.startLives,
+        maxLives: state.settings.startLives,
+        isLeader: false,
+        isBot: true,
+        franchise: randomAv.franchise || 'Sonstige'
+      });
+      renderLobby();
+    }
+
+    function transferLeader(playerId) {
+      playSound('click');
+      state.players.forEach(p => p.isLeader = (p.id === playerId));
+      renderLobby();
+    }
+
+    function updateLeaderSettings() {
+      state.settings.timerDuration = parseInt(document.getElementById('leader-timer-select').value);
+      state.settings.startLives = parseInt(document.getElementById('leader-lives-select').value);
+      state.settings.teamsMode = document.getElementById('leader-teams-select').value;
+      state.players.forEach(p => p.lives = state.settings.startLives);
+    }
+
+    function copyInviteLink() {
+      playSound('success');
+      const currentUrl = window.location.href;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(currentUrl).then(() => {
+          alert('Direkt-Link zum Spiel kopiert! Schicke ihn einfach an deine Freunde.');
+        });
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = currentUrl;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+        alert('Direkt-Link kopiert!');
+      }
+    }
+
+    function startMatch() {
+      playSound('success');
+      state.match = {
+        activePlayerIndex: 0, currentQuestionIndex: 0, roundNumber: 1,
+        timerInterval: null, timeLeft: state.settings.timerDuration, isPaused: false,
+        phase: 'answering', answersGiven: {}, votesGiven: {}, votingTimeLeft: 30, votingInterval: null
+      };
+
+      document.getElementById('screen-lobby').classList.add('hidden');
+      document.getElementById('screen-game').classList.remove('hidden');
+      document.getElementById('header-status-text').textContent = 'Runde 1 - Antwort-Phase';
+
+      loadNextPlayerTurn();
+    }
+
+    function loadNextPlayerTurn() {
+      const activeP = state.players[state.match.activePlayerIndex];
+      
+      if (state.match.activePlayerIndex >= state.players.length) {
+        startVotingPhase();
+        return;
+      }
+
+      const q = state.questions[state.match.currentQuestionIndex % state.questions.length];
+      state.match.currentQuestion = q;
+
+      document.getElementById('game-round-badge').textContent = `Runde ${state.match.roundNumber} - Frage ${state.match.currentQuestionIndex + 1}`;
+      document.getElementById('active-player-title').textContent = `${activeP.name} ist am Zug!`;
+      document.getElementById('game-current-player-name').textContent = activeP.name;
+      document.getElementById('game-active-avatar-img').src = activeP.avatar;
+      document.getElementById('game-question-text').textContent = q.text;
+      document.getElementById('player-answer-input').value = '';
+
+      state.match.timeLeft = state.settings.timerDuration;
+      updateGameTimerDisplay();
+      if (state.match.timerInterval) clearInterval(state.match.timerInterval);
+
+      state.match.timerInterval = setInterval(() => {
+        if (state.match.isPaused) return;
+        state.match.timeLeft--;
+        updateGameTimerDisplay();
+
+        if (state.match.timeLeft <= 0) {
+          clearInterval(state.match.timerInterval);
+          handlePlayerTimeout(activeP);
+        }
+      }, 1000);
+
+      if (activeP.isBot) {
+        setTimeout(() => {
+          if (state.match.phase === 'answering') {
+            const botAnswers = ["Weiß ich nicht!", "Keine Ahnung man", "Bester Anime!", "42", activeP.name + "s Antwort"];
+            const ans = botAnswers[Math.floor(Math.random() * botAnswers.length)];
+            document.getElementById('player-answer-input').value = ans;
+            submitPlayerAnswer();
+          }
+        }, 2000);
+      }
+    }
+
+    function updateGameTimerDisplay() {
+      document.getElementById('game-timer-display').textContent = String(state.match.timeLeft).padStart(2, '0');
+    }
+
+    function togglePauseGame() {
+      playSound('click');
+      state.match.isPaused = !state.match.isPaused;
+      const btn = document.getElementById('pause-btn');
+      btn.textContent = state.match.isPaused ? '▶️ Fortsetzen' : '⏸️ Pause';
+      document.getElementById('header-status-text').textContent = state.match.isPaused ? 'Spiel pausiert' : 'Antwort-Phase';
+    }
+
+    function handlePlayerTimeout(player) {
+      playSound('buzzer');
+      state.match.answersGiven[player.id] = "[Zeit abgelaufen]";
+      state.match.currentQuestionIndex++;
+      state.match.activePlayerIndex++;
+      loadNextPlayerTurn();
+    }
+
+    function submitPlayerAnswer() {
+      playSound('success');
+      if (state.match.timerInterval) clearInterval(state.match.timerInterval);
+
+      const activeP = state.players[state.match.activePlayerIndex];
+      const answerVal = document.getElementById('player-answer-input').value.trim();
+      state.match.answersGiven[activeP.id] = answerVal || "[Keine Antwort]";
+
+      state.match.currentQuestionIndex++;
+      state.match.activePlayerIndex++;
+      loadNextPlayerTurn();
+    }
+
+    function startVotingPhase() {
+      state.match.phase = 'voting';
+      document.getElementById('screen-game').classList.add('hidden');
+      document.getElementById('screen-voting').classList.remove('hidden');
+      document.getElementById('header-status-text').textContent = 'Abstimmungs-Runde (30s)';
+
+      renderVotingAnswers();
+
+      state.match.votingTimeLeft = 30;
+      document.getElementById('voting-timer-display').textContent = state.match.votingTimeLeft + 's';
+
+      if (state.match.votingInterval) clearInterval(state.match.votingInterval);
+      state.match.votingInterval = setInterval(() => {
+        state.match.votingTimeLeft--;
+        document.getElementById('voting-timer-display').textContent = state.match.votingTimeLeft + 's';
+
+        if (state.match.votingTimeLeft <= 0) {
+          clearInterval(state.match.votingInterval);
+          finishVotingAndEvaluate();
+        }
+      }, 1000);
+
+      state.players.forEach(bot => {
+        if (bot.isBot) {
+          setTimeout(() => {
+            const others = state.players.filter(p => p.id !== bot.id);
+            if (others.length > 0) {
+              const target = others[Math.floor(Math.random() * others.length)];
+              state.match.votesGiven[bot.id] = target.id;
+            }
+          }, 3000);
+        }
+      });
+    }
+
+    function renderVotingAnswers() {
+      const container = document.getElementById('voting-answers-grid');
+      container.innerHTML = '';
+
+      state.players.forEach(p => {
+        const answer = state.match.answersGiven[p.id] || "Keine Antwort gegeben";
+        const card = document.createElement('div');
+        card.className = 'bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center justify-between gap-4';
+        card.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl overflow-hidden border border-slate-700 flex-shrink-0">
+              <img src="${p.avatar}" class="w-full h-full object-cover">
+            </div>
+            <div>
+              <span class="text-xs font-bold text-amber-400">${p.name}</span>
+              <p class="text-sm font-semibold text-white mt-0.5">"${answer}"</p>
+            </div>
+          </div>
+          <button onclick="castVote('${p.id}')" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl text-xs transition whitespace-nowrap">
+            Schlechteste wählen ➔
+          </button>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function castVote(targetPlayerId) {
+      playSound('click');
+      state.match.votesGiven['p1'] = targetPlayerId;
+      document.getElementById('voting-status-info').textContent = 'Stimme erfolgreich abgegeben!';
+    }
+
+    function forceEndVoting() {
+      playSound('click');
+      if (state.match.votingInterval) clearInterval(state.match.votingInterval);
+      finishVotingAndEvaluate();
+    }
+
+    function finishVotingAndEvaluate() {
+      state.match.phase = 'result';
+      document.getElementById('screen-voting').classList.add('hidden');
+      document.getElementById('screen-result').classList.remove('hidden');
+      document.getElementById('header-status-text').textContent = 'Auswertung & Herzverlust';
+
+      const voteCounts = {};
+      state.players.forEach(p => voteCounts[p.id] = 0);
+      
+      for (const [voterId, targetId] of Object.entries(state.match.votesGiven)) {
+        if (voteCounts[targetId] !== undefined) voteCounts[targetId]++;
+      }
+
+      let maxVotes = -1;
+      let loserId = null;
+      for (const [pid, count] of Object.entries(voteCounts)) {
+        if (count > maxVotes) {
+          maxVotes = count;
+          loserId = pid;
+        }
+      }
+
+      const loser = state.players.find(p => p.id === loserId);
+      if (loser && maxVotes > 0) {
+        loser.lives = Math.max(0, loser.lives - 1);
+        document.getElementById('result-headline').textContent = `${loser.name} hat die schlechteste Antwort!`;
+        document.getElementById('result-subtext').textContent = `Mit ${maxVotes} Stimmen verliert er/sie 1 Leben!`;
+      } else {
+        document.getElementById('result-headline').textContent = 'Unentschieden!';
+        document.getElementById('result-subtext').textContent = 'Niemand hat ein Leben verloren.';
+      }
+
+      const summaryBox = document.getElementById('result-summary-box');
+      summaryBox.innerHTML = '';
+
+      state.players.forEach(p => {
+        const givenAns = state.match.answersGiven[p.id] || '-';
+        let heartsHtml = '';
+        for (let i = 1; i <= p.maxLives; i++) {
+          heartsHtml += i <= p.lives ? '❤️' : '<span class="heart lost">❤️</span>';
+        }
+
+        const row = document.createElement('div');
+        row.className = 'bg-slate-900 border border-slate-800 p-3.5 rounded-xl flex items-center justify-between';
+        row.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg overflow-hidden border border-slate-700">
+              <img src="${p.avatar}" class="w-full h-full object-cover">
+            </div>
+            <div>
+              <span class="text-xs font-bold text-white">${p.name}</span>
+              <p class="text-xs text-slate-400">Antwort: "${givenAns}"</p>
+            </div>
+          </div>
+          <div class="text-lg">${heartsHtml}</div>
+        `;
+        summaryBox.appendChild(row);
+      });
+    }
+
+    function nextRoundOrGame() {
+      playSound('click');
+      state.players = state.players.filter(p => p.lives > 0);
+
+      if (state.players.length <= 1) {
+        alert('Das Spiel ist vorbei! Gewinner steht fest!');
+        location.reload();
+        return;
+      }
+
+      state.match.roundNumber++;
+      state.match.activePlayerIndex = 0;
+      state.match.phase = 'answering';
+      state.match.answersGiven = {};
+      state.match.votesGiven = {};
+
+      document.getElementById('screen-result').classList.add('hidden');
+      document.getElementById('screen-game').classList.remove('hidden');
+      document.getElementById('header-status-text').textContent = `Runde ${state.match.roundNumber} - Antwort-Phase`;
+
+      loadNextPlayerTurn();
+    }
+
+    function setupSpeechRecognition() {}
+
+    function toggleSpeechRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert('Spracheingabe wird von deinem Browser nicht unterstützt.');
+        return;
+      }
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'de-DE';
+      recognition.interimResults = false;
+      document.getElementById('mic-btn').textContent = '🔴 Höre zu...';
+      recognition.onresult = function(event) {
+        document.getElementById('player-answer-input').value = event.results[0][0].transcript;
+        document.getElementById('mic-btn').textContent = '🎙️ Sprechen';
+      };
+      recognition.onerror = () => document.getElementById('mic-btn').textContent = '🎙️ Sprechen';
+      recognition.onend = () => document.getElementById('mic-btn').textContent = '🎙️ Sprechen';
+      recognition.start();
+    }
+
+    function openAdminModal() {
+      playSound('click');
+      document.getElementById('admin-modal').classList.remove('hidden');
+      if (state.isAdminLoggedIn) {
+        document.getElementById('admin-login-box').classList.add('hidden');
+        document.getElementById('admin-dashboard').classList.remove('hidden');
+        renderAdminDashboard();
+      } else {
+        document.getElementById('admin-login-box').classList.remove('hidden');
+        document.getElementById('admin-dashboard').classList.add('hidden');
+      }
+    }
+
+    function closeAdminModal() {
+      playSound('click');
+      document.getElementById('admin-modal').classList.add('hidden');
+    }
+
+    function checkAdminPassword() {
+      const pass = document.getElementById('admin-password-input').value;
+      if (pass === 'minati') {
+        playSound('success');
+        state.isAdminLoggedIn = true;
+        document.getElementById('admin-login-box').classList.add('hidden');
+        document.getElementById('admin-dashboard').classList.remove('hidden');
+        renderAdminDashboard();
+      } else {
+        playSound('buzzer');
+        alert('Falsches Passwort!');
+      }
+    }
+
+    function switchAdminTab(tab) {
+      playSound('click');
+      document.getElementById('admin-tab-avatars').classList.toggle('hidden', tab !== 'avatars');
+      document.getElementById('admin-tab-questions').classList.toggle('hidden', tab !== 'questions');
+      document.getElementById('admin-tab-settings').classList.toggle('hidden', tab !== 'settings');
+
+      document.getElementById('tab-btn-avatars').className = tab === 'avatars' ? 'pb-3 text-sm font-bold text-amber-400 border-b-2 border-amber-400 transition' : 'pb-3 text-sm font-bold text-slate-400 hover:text-white transition';
+      document.getElementById('tab-btn-questions').className = tab === 'questions' ? 'pb-3 text-sm font-bold text-amber-400 border-b-2 border-amber-400 transition' : 'pb-3 text-sm font-bold text-slate-400 hover:text-white transition';
+      document.getElementById('tab-btn-settings').className = tab === 'settings' ? 'pb-3 text-sm font-bold text-amber-400 border-b-2 border-amber-400 transition' : 'pb-3 text-sm font-bold text-slate-400 hover:text-white transition';
+    }
+
+    function renderAdminDashboard() {
+      const avList = document.getElementById('admin-avatars-list');
+      avList.innerHTML = '';
+      state.customAvatars.forEach((av, idx) => {
+        const item = document.createElement('div');
+        item.className = 'bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center gap-3';
+        item.innerHTML = `
+          <div class="w-12 h-12 rounded-lg overflow-hidden border border-slate-700 flex-shrink-0">
+            <img src="${av.img}" class="w-full h-full object-cover">
+          </div>
+          <div class="flex-1 space-y-1">
+            <input type="text" value="${av.name}" onchange="updateAvatarProp(${idx}, 'name', this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-white text-xs font-semibold">
+            <input type="text" value="${av.franchise || 'Sonstige'}" onchange="updateAvatarProp(${idx}, 'franchise', this.value)" placeholder="Franchise" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-slate-300 text-[10px]">
+          </div>
+          <button onclick="deleteAvatar(${idx})" class="p-2 bg-rose-600/20 text-rose-400 rounded-lg hover:bg-rose-600/30 text-xs">🗑️</button>
+        `;
+        avList.appendChild(item);
+      });
+
+      const qList = document.getElementById('admin-questions-list');
+      qList.innerHTML = '';
+      document.getElementById('admin-q-count').textContent = state.questions.length;
+      state.questions.forEach((q, idx) => {
+        const qItem = document.createElement('div');
+        qItem.className = 'bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between gap-3';
+        qItem.innerHTML = `
+          <div class="flex-1">
+            <span class="text-[10px] text-amber-400 font-bold">#${idx + 1}</span>
+            <p class="text-xs text-white font-medium">${q.text}</p>
+            <span class="text-[10px] text-slate-400">Antwort: ${q.answer}</span>
+          </div>
+          <button onclick="deleteQuestion(${idx})" class="p-2 bg-rose-600/20 text-rose-400 rounded-lg hover:bg-rose-600/30 text-xs">🗑️</button>
+        `;
+        qList.appendChild(qItem);
+      });
+
+      document.getElementById('admin-timer-input').value = state.settings.timerDuration;
+      document.getElementById('admin-lives-input').value = state.settings.startLives;
+    }
+
+    function handleAdminFileUpload(event) {
+      const files = event.target.files;
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const rawName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+          state.customAvatars.push({
+            id: 'custom_' + Date.now() + '_' + i,
+            name: rawName,
+            franchise: 'Eigene Uploads',
+            img: e.target.result
+          });
+          saveStateToStorage();
+          renderAdminDashboard();
+          renderLobby();
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function updateAvatarProp(idx, prop, val) {
+      state.customAvatars[idx][prop] = val;
+      saveStateToStorage();
+      renderLobby();
+    }
+
+    function deleteAvatar(idx) {
+      playSound('click');
+      state.customAvatars.splice(idx, 1);
+      saveStateToStorage();
+      renderAdminDashboard();
+      renderLobby();
+    }
+
+    function addNewQuestion() {
+      playSound('success');
+      const text = document.getElementById('new-q-text').value.trim();
+      const answer = document.getElementById('new-q-answer').value.trim();
+      if (!text || !answer) {
+        alert('Bitte Fragetext und Antwort eingeben!');
+        return;
+      }
+      state.questions.push({ id: Date.now(), text, answer });
+      saveStateToStorage();
+      document.getElementById('new-q-text').value = '';
+      document.getElementById('new-q-answer').value = '';
+      renderAdminDashboard();
+    }
+
+    function deleteQuestion(idx) {
+      playSound('click');
+      state.questions.push(); // dummy
+      state.questions.splice(idx, 1);
+      saveStateToStorage();
+      renderAdminDashboard();
+    }
+
+    function saveAdminSettings() {
+      playSound('success');
+      state.settings.timerDuration = parseInt(document.getElementById('admin-timer-input').value);
+      state.settings.startLives = parseInt(document.getElementById('admin-lives-input').value);
+      saveStateToStorage();
+      alert('Einstellungen erfolgreich gespeichert!');
+      closeAdminModal();
+    }
+  </script>
+</body>
+</html>
