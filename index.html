@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="referrer" content="no-referrer">
-  <title>Der Dümmste fliegt</title>
+  <title>Der Dümmste Fliegt</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -21,317 +20,228 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Permanent+Marker&display=swap" rel="stylesheet">
   <style>
     .fun-font { font-family: 'Permanent Marker', cursive, sans-serif; }
-    .glass { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
-    .heart.lost { filter: grayscale(100%); opacity: 0.3; transform: scale(0.9); transition: all 0.3s ease; }
+    .glass { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(51, 65, 85, 0.5); }
+    .heart-lost { filter: grayscale(100%); opacity: 0.3; transform: scale(0.9); transition: all 0.3s; }
     @keyframes pulse-slow { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     .animate-pulse-slow { animation: 3s cubic-bezier(0.4, 0, 0.6, 1) infinite pulse-slow; }
   </style>
-  <!-- PeerJS for P2P Multiplayer (Kein Firebase nötig!) -->
+  <!-- PeerJS für P2P Multiplayer -->
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-full flex flex-col antialiased selection:bg-rose-500 selection:text-white">
 
   <!-- TOP HEADER -->
   <header class="w-full glass sticky top-0 z-50 px-4 py-3 flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 shadow-lg">
-    <div class="flex items-center space-x-3">
-      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-rose-600 flex items-center justify-center shadow-md shadow-rose-500/20">
-        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-rose-600 flex items-center justify-center shadow-lg shadow-rose-500/20">
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
       </div>
       <div>
-        <h1 class="text-lg md:text-xl font-extrabold tracking-tight fun-font bg-gradient-to-r from-amber-400 via-rose-400 to-purple-400 bg-clip-text text-transparent">Der Dümmste fliegt</h1>
-        <p class="text-xs text-slate-400 flex items-center gap-1.5"><span id="header-timer-badge" class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> <span id="header-status-text">Lobby & Raum-Bereitschaft</span></p>
+        <h1 class="text-lg md:text-xl font-extrabold tracking-tight fun-font bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">DER DÜMMSTE FLIEGT</h1>
+        <p class="text-xs text-slate-400 flex items-center gap-1.5"><span id="header-status-dot" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span id="header-status-text">Bereit (Raum aktiv)</span></p>
       </div>
     </div>
-    
-    <div class="flex items-center flex-wrap gap-2">
-      <div id="host-top-controls" class="flex items-center gap-2">
-        <button onclick="restartMatchSameChars()" id="header-restart-btn" class="px-3.5 py-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-300 font-bold rounded-xl text-xs md:text-sm flex items-center gap-1.5 shadow-sm transition cursor-pointer">
-          🔄 Neustart
-        </button>
-        <button onclick="returnToLobby()" id="header-lobby-btn" class="px-3.5 py-2 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/50 text-indigo-300 font-bold rounded-xl text-xs md:text-sm flex items-center gap-1.5 shadow-sm transition cursor-pointer">
-          🏠 Lobby
-        </button>
-      </div>
-      <button onclick="toggleAudio()" id="audio-btn" class="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700/60 transition shadow-sm cursor-pointer" title="Sound an/aus">🔊</button>
-      <button onclick="openAdminModal()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-amber-500/40 text-amber-400 font-semibold rounded-xl text-xs md:text-sm flex items-center gap-2 shadow-sm transition hover:border-amber-500 cursor-pointer">⚙️ Admin</button>
+    <div class="flex items-center gap-2">
+      <button onclick="restartMatchSameChars()" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">🔄 Neustart</button>
+      <button onclick="returnToLobby()" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">🏠 Lobby</button>
+      <button onclick="toggleAudio()" id="audio-btn" class="w-9 h-9 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl flex items-center justify-center text-sm cursor-pointer" title="Audio An/Aus">🔊</button>
+      <button onclick="openAdminModal()" class="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">🛠️ Admin</button>
     </div>
   </header>
-  <!-- MAIN CONTAINER -->
-  <main class="flex-1 flex flex-col items-center justify-center p-4 md:p-6 max-w-7xl mx-auto w-full">
 
-    <!-- SCREEN 1: LOBBY & PROFIL-SETUP -->
-    <div id="screen-lobby" class="w-full max-w-6xl glass rounded-3xl p-5 md:p-8 shadow-2xl">
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 flex flex-col items-center justify-center p-4 max-w-7xl mx-auto w-full">
+
+    <!-- SCREEN 1: LOBBY & CHARAKTERWAHL -->
+    <div id="screen-lobby" class="w-full max-w-5xl glass rounded-3xl p-5 md:p-8 shadow-2xl">
       <div class="text-center mb-6">
         <span class="px-3 py-1 bg-amber-500/20 text-amber-400 rounded-full text-xs font-bold uppercase tracking-wider">Anime Lobby & PeerJS Multiplayer</span>
-        <h2 class="text-2xl md:text-3xl font-extrabold mt-2 fun-font text-white">Wähle deinen Charakter</h2>
+        <h2 class="text-3xl md:text-5xl font-extrabold mt-2 fun-font tracking-wide bg-gradient-to-r from-amber-400 via-rose-500 to-purple-500 bg-clip-text text-transparent">WÄHLE DEINEN CHARAKTER</h2>
         <p class="text-slate-400 text-xs md:text-sm mt-1">Jeder Charakter kann nur 1x gewählt werden! Der erste Spieler ist der Anführer (👑).</p>
       </div>
 
-      <!-- EIGENE SPIELERKARTE VORSCHAU -->
-      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 mb-6 flex flex-col sm:flex-row items-center gap-5 shadow-inner">
-        <div class="relative group">
-          <div id="preview-border-ring" class="w-24 h-24 rounded-2xl overflow-hidden border-4 border-rose-500 shadow-lg shadow-rose-500/20 bg-slate-950">
+      <!-- BEARBEITUNGS-BOX FÜR AKTIVEN SPIELER -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 mb-6 shadow-xl relative">
+        <div class="absolute top-4 right-4 flex items-center gap-2">
+          <span id="preview-leader-badge" class="px-2.5 py-1 bg-amber-500 text-slate-950 font-black text-[10px] rounded-lg shadow-md uppercase tracking-wider hidden">👑 Anführer</span>
+        </div>
+
+        <div class="flex flex-col md:flex-row items-center gap-5">
+          <div class="w-24 h-24 rounded-2xl overflow-hidden border-2 border-amber-500/80 bg-slate-950 flex-shrink-0 shadow-lg relative">
             <img id="preview-avatar-img" src="" alt="Avatar" class="w-full h-full object-cover">
           </div>
-          <span id="preview-leader-badge" class="absolute -top-2 -right-2 bg-amber-500 text-slate-950 font-bold px-2 py-0.5 rounded-full text-xs shadow-md flex items-center gap-1 hidden">👑 Anführer</span>
-        </div>
-        <div class="flex-1 w-full text-center sm:text-left">
-          <div class="flex items-center justify-between mb-1">
-            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Aktiver Spieler für Charakterwahl</label>
-            <span id="editing-player-indicator" class="text-[11px] font-bold text-amber-400">Spieler 1 (Anführer)</span>
-          </div>
-          <div class="flex gap-2">
-            <input type="text" id="player-name-input" value="Naruto" oninput="updateActivePlayerName(this.value)" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white font-semibold focus:outline-none focus:border-rose-500 text-sm">
-            <button onclick="resetPlayerName()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-medium transition cursor-pointer" title="Auf Charakternamen setzen">↺</button>
-          </div>
-          <div id="team-assignment-badge" class="mt-2 text-xs font-bold text-slate-400">Team: Keins</div>
-          <!-- 5 TEAMS SELECTOR -->
-          <div id="team-choice-container" class="mt-3">
-            <span class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Wähle dein Team:</span>
-            <div class="flex flex-wrap gap-2">
-              <button type="button" onclick="assignTeamToEditingPlayer('rot')" class="px-3 py-1 rounded-xl text-xs font-bold border-2 border-red-500 bg-red-500/20 text-red-300 hover:bg-red-500/40 transition">🔴 Rot</button>
-              <button type="button" onclick="assignTeamToEditingPlayer('blau')" class="px-3 py-1 rounded-xl text-xs font-bold border-2 border-blue-500 bg-blue-500/20 text-blue-300 hover:bg-blue-500/40 transition">🔵 Blau</button>
-              <button type="button" onclick="assignTeamToEditingPlayer('gruen')" class="px-3 py-1 rounded-xl text-xs font-bold border-2 border-emerald-500 bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/40 transition">🟢 Grün</button>
-              <button type="button" onclick="assignTeamToEditingPlayer('gelb')" class="px-3 py-1 rounded-xl text-xs font-bold border-2 border-yellow-400 bg-yellow-400/20 text-yellow-300 hover:bg-yellow-400/40 transition">🟡 Gelb</button>
-              <button type="button" onclick="assignTeamToEditingPlayer('lila')" class="px-3 py-1 rounded-xl text-xs font-bold border-2 border-purple-500 bg-purple-500/20 text-purple-300 hover:bg-purple-500/40 transition">🟣 Lila</button>
-              <button type="button" onclick="assignTeamToEditingPlayer(null)" class="px-3 py-1 rounded-xl text-xs font-bold border border-slate-700 bg-slate-800 text-slate-400 hover:bg-slate-700 transition">Keins</button>
+          <div class="flex-1 w-full space-y-3">
+            <div>
+              <span id="editing-player-indicator" class="text-xs font-bold text-amber-400 uppercase tracking-wider">Spieler 1</span>
+              <div class="flex gap-2 mt-1">
+                <input type="text" id="player-name-input" placeholder="Dein Name..." oninput="updateActivePlayerName(this.value)" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white font-bold text-sm focus:outline-none focus:border-amber-500">
+                <button onclick="resetPlayerName()" class="px-3 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition cursor-pointer" title="Namen zurücksetzen">🔄</button>
+              </div>
             </div>
-          </div>
-        </div>
-      </div>
-      <!-- CHARAKTER-AUSWAHL GALERIE -->
-      <div class="mb-6">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider">Wähle einen Charakter (Graue sind bereits vergeben)</h3>
-          <button onclick="openAdminModal()" class="text-xs text-amber-400 hover:underline flex items-center gap-1 cursor-pointer">⚙️ Namen & Bilder im Admin anpassen</button>
-        </div>
-        <div id="lobby-avatars-container" class="space-y-4 max-h-72 overflow-y-auto pr-1"></div>
-      </div>
 
-      <!-- MITSPIELER / BOTS IN DER LOBBY -->
-      <div class="mb-6 bg-slate-950/60 rounded-2xl p-4 border border-slate-800">
-        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-          <div>
-            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Mitspieler in der Runde (<span id="player-count">1</span>)</h4>
-            <p class="text-[11px] text-slate-500">Klicke auf einen Mitspieler, um dessen Charakter zu ändern.</p>
-          </div>
-          <div class="flex gap-2">
-            <button onclick="addHumanPlayer()" class="px-3 py-1.5 bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/30 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
-              ➕ + Spieler
-            </button>
-            <button onclick="addBotPlayer()" class="px-3 py-1.5 bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-500/30 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
-              🤖 + Bot hinzufügen
-            </button>
-          </div>
-        </div>
-        <div id="lobby-players-grid" class="flex flex-wrap gap-3"></div>
-      </div>
-      <!-- ANFÜHRER / LOBBY OPTIONEN -->
-      <div id="leader-options-box" class="mb-6 bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4">
-        <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-3 flex items-center gap-2">👑 Anführer-Einstellungen (Für dieses Spiel)</h4>
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-          <div>
-            <label class="block text-xs text-slate-300 mb-1">Gesamtzeit (bis Voting)</label>
-            <select id="leader-matchtime-select" onchange="updateLeaderSettings()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-semibold">
-              <option value="1">1 Minute</option>
-              <option value="2" selected>2 Minuten</option>
-              <option value="3">3 Minuten</option>
-              <option value="4">4 Minuten</option>
-              <option value="5">5 Minuten</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs text-slate-300 mb-1">Antwortzeit pro Frage</label>
-            <select id="leader-timer-select" onchange="updateLeaderSettings()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-semibold">
-              <option value="3">3 Sekunden</option>
-              <option value="5">5 Sekunden</option>
-              <option value="7">7 Sekunden</option>
-              <option value="10">10 Sekunden</option>
-              <option value="12">12 Sekunden</option>
-              <option value="15" selected>15 Sekunden</option>
-              <option value="20">20 Sekunden</option>
-              <option value="30">30 Sekunden</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs text-slate-300 mb-1">Start-Leben</label>
-            <select id="leader-lives-select" onchange="updateLeaderSettings()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-semibold">
-              <option value="1">1 Herz</option>
-              <option value="2">2 Herzen</option>
-              <option value="3" selected>3 Herzen</option>
-              <option value="5">5 Herzen</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs text-slate-300 mb-1">Teams Modus</label>
-            <select id="leader-teams-select" onchange="updateLeaderSettings()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-semibold">
-              <option value="off" selected>Aus (Jeder gegen Jeden)</option>
-              <option value="2">2 Teams (Rot vs Blau)</option>
-              <option value="4">4 Teams (Rot, Blau, Grün, Gelb)</option>
-              <option value="5">5 Teams (Rot, Blau, Grün, Gelb, Lila)</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <!-- ACTION BUTTONS -->
-      <div class="flex flex-col sm:flex-row gap-3">
-        <button onclick="copyInviteLink()" class="flex-1 px-5 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold rounded-xl text-sm transition flex items-center justify-center gap-2 cursor-pointer">
-          🔗 Einladungs-Link kopieren
-        </button>
-        <button onclick="startMatch()" class="flex-2 px-6 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-extrabold rounded-xl text-base shadow-lg shadow-emerald-500/20 transition transform active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
-          🚀 Spiel starten!
-        </button>
-      </div>
-    </div>
-    <!-- SCREEN 2: FRAGE- & ANTWORT-PHASE -->
-    <div id="screen-game" class="w-full max-w-6xl glass rounded-3xl p-5 md:p-8 shadow-2xl hidden">
-      <!-- HUD -->
-      <div class="flex flex-wrap items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-800">
-        <div>
-          <span id="game-round-badge" class="text-xs font-bold text-amber-400 uppercase tracking-wider">Durchgang 1 - Frage 1</span>
-          <div class="mt-1 inline-flex items-center gap-2 bg-slate-900 border border-slate-800 px-3 py-1 rounded-full">
-            <span class="text-xs text-slate-400">Am Zug:</span>
-            <span id="active-player-title" class="text-sm font-extrabold text-amber-400">Spieler</span>
-          </div>
-        </div>
-        <div class="flex flex-wrap items-center gap-2.5">
-          <div class="px-3.5 py-2 bg-indigo-500/20 border border-indigo-500/40 rounded-2xl flex items-center gap-2">
-            <span class="text-xs text-indigo-300 font-bold uppercase">Gesamtzeit:</span>
-            <span class="text-indigo-400 font-mono font-extrabold text-base md:text-lg" id="match-total-timer-display">02:00</span>
-          </div>
-          <button onclick="togglePauseGame()" id="pause-btn" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-slate-700 cursor-pointer">
-            ⏸️ Pause
-          </button>
-          <div class="px-3.5 py-2 bg-rose-500/20 border border-rose-500/40 rounded-2xl flex items-center gap-1.5">
-            <span class="text-xs text-rose-300 font-bold uppercase">Frage:</span>
-            <span class="text-rose-400 font-mono font-extrabold text-base md:text-lg" id="game-timer-display">15</span>
-            <span class="text-xs text-rose-300 font-medium uppercase">s</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- GROSSE, AUFFÄLLIGE FRAGE-BOX MIT SPRACHAUSGABE & STEUERUNG -->
-      <div class="bg-gradient-to-r from-slate-900 via-rose-950/20 to-slate-900 border-2 border-rose-500/70 rounded-2xl p-6 mb-6 flex flex-col md:flex-row items-center gap-6 shadow-2xl shadow-rose-950/30">
-        <div id="game-active-avatar-wrap" class="w-24 h-24 rounded-2xl overflow-hidden border-4 border-rose-500 bg-slate-950 flex-shrink-0 shadow-lg">
-          <img id="game-active-avatar-img" src="" alt="Avatar" class="w-full h-full object-cover">
-        </div>
-        <div class="flex-1 text-center md:text-left w-full">
-          <div class="flex flex-wrap items-center justify-center md:justify-between gap-2 mb-2">
-            <div class="flex items-center gap-2">
-              <span class="px-2.5 py-0.5 bg-rose-500/20 text-rose-300 rounded-md text-[10px] font-black uppercase tracking-widest">FRAGE</span>
-              <span class="text-xs text-slate-400">für <span id="game-current-player-name" class="text-amber-400 font-bold">Name</span></span>
-            </div>
-            <!-- Sprachausgabe Steuerung (Wiederholen, Ein/Aus, Lautstärke) -->
-            <div class="flex flex-wrap items-center gap-2">
-              <button type="button" onclick="repeatCurrentQuestionVoice()" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer" title="Frage noch einmal vorlesen">
-                🔁 Wiederholen
-              </button>
-              <button type="button" id="voice-toggle-btn" onclick="toggleVoiceSpeech()" class="px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer" title="Automatische Sprachausgabe an/aus">
-                🗣️ Stimme: An
-              </button>
-              <div class="flex items-center gap-1 bg-slate-900 px-2 py-1 rounded-xl border border-slate-800">
-                <span class="text-[10px] text-slate-400">🔊 Vol:</span>
-                <input type="range" id="voice-volume-slider" min="0" max="1" step="0.1" value="1" oninput="updateVoiceVolume(this.value)" class="w-16 accent-amber-500 cursor-pointer">
+            <div id="team-choice-container" class="hidden">
+              <span class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Wähle dein Team:</span>
+              <div class="flex flex-wrap gap-1.5">
+                <button onclick="assignTeamToEditingPlayer('rot')" class="px-2.5 py-1 bg-rose-500/20 text-rose-300 border border-rose-500/40 rounded-lg text-xs font-bold">🔴 Rot</button>
+                <button onclick="assignTeamToEditingPlayer('blau')" class="px-2.5 py-1 bg-blue-500/20 text-blue-300 border border-blue-500/40 rounded-lg text-xs font-bold">🔵 Blau</button>
+                <button onclick="assignTeamToEditingPlayer('grün')" class="px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded-lg text-xs font-bold">🟢 Grün</button>
+                <button onclick="assignTeamToEditingPlayer('gelb')" class="px-2.5 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-lg text-xs font-bold">🟡 Gelb</button>
+                <button onclick="assignTeamToEditingPlayer('lila')" class="px-2.5 py-1 bg-purple-500/20 text-purple-300 border border-purple-500/40 rounded-lg text-xs font-bold">🟣 Lila</button>
+                <button onclick="assignTeamToEditingPlayer(null)" class="px-2.5 py-1 bg-slate-800 text-slate-300 rounded-lg text-xs font-bold">Keins</button>
               </div>
             </div>
           </div>
-          <p id="game-question-text" class="text-2xl md:text-3xl font-black text-white leading-snug drop-shadow-md">
-            Lade Frage...
-          </p>
         </div>
       </div>
-      <!-- ANTWORT INPUT / SPRACHREZEPTOR -->
-      <div class="space-y-4">
+
+      <!-- CHARAKTER-GRID AUSWAHL -->
+      <div class="mb-6">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Wähle einen Charakter (Graue sind bereits vergeben)</h3>
+          <span class="text-xs text-amber-400 font-bold" id="team-assignment-badge"></span>
+        </div>
+        <div id="lobby-avatars-container" class="space-y-4 max-h-[42vh] overflow-y-auto pr-2"></div>
+      </div>
+      <!-- MITSPIELER & SPIELEINSTELLUNGEN -->
+      <div id="leader-options-box" class="space-y-4 pt-4 border-t border-slate-800" style="display:none;">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-900/90 border border-slate-800 rounded-2xl p-4">
+          <div>
+            <h4 class="text-xs font-bold text-white uppercase tracking-wider">Mitspieler in der Runde (<span id="player-count">1</span>)</h4>
+            <p class="text-[11px] text-slate-400">Klicke oben auf deinen Namen, um dich umzubenennen oder andere Spieler hinzuzufügen.</p>
+          </div>
+          <div class="flex gap-2 w-full sm:w-auto">
+            <button onclick="addHumanPlayer()" class="flex-1 sm:flex-none px-4 py-2.5 bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/40 font-bold rounded-xl text-xs transition cursor-pointer">+ Spieler</button>
+            <button onclick="addBotPlayer()" class="flex-1 sm:flex-none px-4 py-2.5 bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-500/40 font-bold rounded-xl text-xs transition cursor-pointer">🤖 Bot hinzufügen</button>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 space-y-3">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-amber-400">👑 Anführer-Einstellungen (Für dieses Spiel)</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+            <div>
+              <label class="block text-[11px] text-slate-400 mb-1">Gesamtzeit (bis Voting)</label>
+              <select id="leader-matchtime-select" onchange="updateLeaderSettings()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs font-semibold focus:outline-none focus:border-amber-500">
+                <option value="1">1 Minute</option><option value="2" selected>2 Minuten</option><option value="3">3 Minuten</option><option value="4">4 Minuten</option><option value="5">5 Minuten</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] text-slate-400 mb-1">Antwortzeit pro Frage</label>
+              <select id="leader-timer-select" onchange="updateLeaderSettings()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs font-semibold focus:outline-none focus:border-amber-500">
+                <option value="10">10 Sekunden</option><option value="15" selected>15 Sekunden</option><option value="20">20 Sekunden</option><option value="30">30 Sekunden</option><option value="60">60 Sekunden</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] text-slate-400 mb-1">Start-Leben</label>
+              <select id="leader-lives-select" onchange="updateLeaderSettings()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs font-semibold focus:outline-none focus:border-amber-500">
+                <option value="1">1 Leben</option><option value="2">2 Leben</option><option value="3" selected>3 Herzen</option><option value="5">5 Leben</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] text-slate-400 mb-1">Teams Modus</label>
+              <select id="leader-teams-select" onchange="updateLeaderSettings()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs font-semibold focus:outline-none focus:border-amber-500">
+                <option value="off" selected>Aus (Jeder gegen Jeden)</option><option value="teams">5 Teams (Rot, Blau, Grün, Gelb, Lila)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 flex flex-col sm:flex-row gap-3">
+        <button onclick="copyInviteLink()" class="px-5 py-3.5 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 font-bold rounded-xl text-sm transition cursor-pointer">🔗 Einladungs-Link kopieren</button>
+        <button onclick="startMatch()" class="flex-1 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold rounded-xl text-base shadow-lg transition cursor-pointer">🚀 Spiel starten!</button>
+      </div>
+    </div>
+
+    <!-- SCREEN 2: SPIEL (FRAGEN & ANTWORTEN) -->
+    <div id="screen-game" class="w-full max-w-4xl glass rounded-3xl p-5 md:p-8 shadow-2xl hidden">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-6">
         <div>
-          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Deine Antwort (Sprechen oder Tippen)</label>
-          <div class="flex gap-2">
-            <input type="text" id="player-answer-input" placeholder="Antwort einsprechen oder eintippen..." onkeydown="if(event.key==='Enter')submitPlayerAnswer()" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white font-semibold focus:outline-none focus:border-rose-500 text-sm md:text-base">
-            <button onclick="toggleSpeechRecognition()" id="mic-btn" class="px-4 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 rounded-xl font-bold text-sm transition flex items-center gap-2 cursor-pointer" title="Spracheingabe starten">
-              🎙️ Sprechen
-            </button>
+          <span id="game-round-badge" class="px-3 py-1 bg-rose-500/20 text-rose-400 rounded-full text-xs font-bold uppercase tracking-wider">Durchgang 1</span>
+          <h3 id="active-player-title" class="text-2xl font-extrabold mt-1 text-white">Spieler</h3>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="text-right">
+            <span class="block text-[10px] text-slate-400 uppercase tracking-widest">Gesamtzeit</span>
+            <span id="match-total-timer-display" class="text-sm font-bold text-amber-400 font-mono">02:00</span>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-xl font-extrabold text-rose-300 font-mono" id="game-timer-display">15</div>
+          <button onclick="togglePauseGame()" id="pause-btn" class="px-3 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-bold rounded-xl text-xs transition cursor-pointer">⏸️ Pause</button>
+        </div>
+      </div>
+
+      <div class="flex flex-col md:flex-row items-center gap-6 bg-slate-900/90 border border-slate-800 rounded-2xl p-6 mb-6">
+        <div class="w-28 h-28 rounded-2xl overflow-hidden border-2 border-rose-500/60 bg-slate-950 flex-shrink-0 shadow-lg">
+          <img id="game-active-avatar-img" src="" alt="Aktiver Avatar" class="w-full h-full object-cover">
+        </div>
+        <div class="flex-1 w-full space-y-2 text-center md:text-left">
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Frage für <span id="game-current-player-name" class="text-rose-400">Spieler</span></span>
+          <h2 id="game-question-text" class="text-xl md:text-2xl font-extrabold text-white leading-snug">Lädt Frage...</h2>
+          <div class="flex items-center justify-center md:justify-start gap-2 pt-2">
+            <button onclick="repeatCurrentQuestionVoice()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 rounded-xl text-xs font-bold transition cursor-pointer">🔊 Vorlesen</button>
+            <div class="flex items-center gap-2 bg-slate-950 px-3 py-1 rounded-xl border border-slate-800">
+              <span class="text-[10px] text-slate-400">Lautstärke:</span>
+              <input type="range" min="0" max="1" step="0.1" value="1" onchange="updateVoiceVolume(this.value)" class="w-16 accent-amber-500 cursor-pointer">
+            </div>
+            <button onclick="toggleVoiceSpeech()" id="voice-toggle-btn" class="px-3 py-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-xl text-xs font-bold transition cursor-pointer">🗣️ Stimme: An</button>
           </div>
         </div>
+      </div>
 
-        <div class="flex flex-col sm:flex-row gap-3">
-          <button onclick="submitPlayerAnswer()" class="flex-1 py-3.5 bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white font-extrabold rounded-xl text-base shadow-lg shadow-rose-500/20 transition cursor-pointer">
-            Antwort abgeben & nächste Frage ➔
-          </button>
-          <button onclick="startVotingPhase()" class="px-4 py-3.5 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 font-bold rounded-xl text-xs md:text-sm transition cursor-pointer" title="Durchgang vorzeitig beenden und direkt zum Voting">
-            🗳️ Direkt zum Voting
-          </button>
+      <div class="space-y-3">
+        <div class="relative flex gap-2">
+          <input type="text" id="player-answer-input" placeholder="Tippe deine dumme Antwort ein..." class="flex-1 bg-slate-900 border border-slate-700 rounded-2xl px-5 py-4 text-white text-base font-semibold focus:outline-none focus:border-rose-500 shadow-inner" onkeydown="if(event.key==='Enter')submitPlayerAnswer()">
+          <button onclick="toggleSpeechRecognition()" id="mic-btn" class="px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-2xl text-lg transition cursor-pointer" title="Spracheingabe">🎙️</button>
+          <button onclick="submitPlayerAnswer()" class="px-6 py-4 bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white font-extrabold rounded-2xl text-base shadow-lg transition cursor-pointer">Antworten ➔</button>
         </div>
       </div>
     </div>
+    <!-- SCREEN 3: VOTING -->
+    <div id="screen-voting" class="w-full max-w-5xl glass rounded-3xl p-5 md:p-8 shadow-2xl hidden">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-6">
+        <div>
+          <span class="px-3 py-1 bg-amber-500/20 text-amber-400 rounded-full text-xs font-bold uppercase tracking-wider">Voting-Phase</span>
+          <h2 class="text-2xl md:text-3xl font-extrabold mt-1 fun-font text-white">Wer gab die dümmste Antwort?</h2>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-base font-extrabold text-amber-300 font-mono" id="voting-timer-display">120s</div>
+          <button onclick="toggleHostSolutions()" id="host-solutions-btn" class="px-3 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-bold rounded-xl text-xs transition cursor-pointer">🔑 Musterlösungen anzeigen</button>
+        </div>
+      </div>
+      <div id="voting-answers-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 max-h-[50vh] overflow-y-auto pr-2"></div>
+      <div class="text-center">
+        <button onclick="forceEndVoting()" class="px-6 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-extrabold rounded-xl text-sm shadow-lg transition cursor-pointer">Voting beenden & Auswerten ➔</button>
+      </div>
+    </div>
 
-    <!-- SCREEN 3: VOTING-RUNDE -->
-    <div id="screen-voting" class="w-full max-w-6xl glass rounded-3xl p-5 md:p-8 shadow-2xl hidden">
+    <!-- SCREEN 4: ERGEBNIS / RUNDE VORBEI -->
+    <div id="screen-result" class="w-full max-w-4xl glass rounded-3xl p-5 md:p-8 shadow-2xl hidden">
       <div class="text-center mb-6">
-        <span class="px-3 py-1 bg-rose-500/20 text-rose-400 rounded-full text-xs font-bold uppercase tracking-wider">Abstimmungs-Runde</span>
-        <h2 class="text-2xl md:text-4xl font-extrabold mt-2 fun-font text-white">Wer hatte die dümmsten Antworten?</h2>
-        <p class="text-slate-400 text-xs md:text-sm mt-1">Hier sind die Antworten der Spieler. Gib demjenigen deine Stimme, der die dümmste Antwort hatte!</p>
-        <div class="mt-3 flex flex-wrap items-center justify-center gap-3">
-          <div class="inline-flex items-center gap-2 bg-slate-900 border border-slate-800 px-4 py-1.5 rounded-full">
-            <span class="text-xs text-slate-400">Verbleibende Voting-Zeit:</span>
-            <span id="voting-timer-display" class="font-mono font-bold text-amber-400 text-lg">120s</span>
-          </div>
-          <button id="host-solutions-btn" onclick="toggleHostSolutions()" class="px-3.5 py-1.5 bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-300 font-bold rounded-full text-xs transition cursor-pointer flex items-center gap-1.5">
-            🔑 Musterlösungen anzeigen
-          </button>
-        </div>
+        <span class="px-3 py-1 bg-rose-500/20 text-rose-400 rounded-full text-xs font-bold uppercase tracking-wider">Ergebnis der Runde</span>
+        <h2 class="text-3xl md:text-4xl font-extrabold mt-2 fun-font text-white">WER FLIEGT?</h2>
       </div>
-
-      <div id="voting-answers-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 max-h-[60vh] overflow-y-auto pr-1"></div>
-
-      <div class="flex justify-between items-center pt-4 border-t border-slate-800">
-        <span id="voting-status-info" class="text-xs text-slate-400">Warten auf Abstimmungen...</span>
-        <button onclick="forceEndVoting()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 rounded-xl text-xs font-bold transition cursor-pointer">
-          ⚡ Voting auswerten
-        </button>
+      <div id="result-summary-box" class="space-y-3 mb-6 max-h-[45vh] overflow-y-auto pr-2"></div>
+      <div class="flex justify-center gap-3">
+        <button onclick="nextRoundOrGame()" class="px-6 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold rounded-xl text-sm shadow-lg transition cursor-pointer">Nächste Runde ➔</button>
+        <button onclick="returnToLobby()" class="px-6 py-3.5 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 font-bold rounded-xl text-sm transition cursor-pointer">Zurück zur Lobby</button>
       </div>
     </div>
-    <!-- SCREEN 4: ERGEBNIS -->
-    <div id="screen-result" class="w-full max-w-6xl glass rounded-3xl p-5 md:p-8 shadow-2xl hidden text-center">
-      <span class="px-3 py-1 bg-amber-500/20 text-amber-400 rounded-full text-xs font-bold uppercase tracking-wider">Durchgang beendet – Auswertung</span>
-      <h2 class="text-2xl md:text-3xl font-extrabold mt-2 fun-font text-white" id="result-headline">Das Urteil ist gefallen!</h2>
-      <p id="result-subtext" class="text-slate-400 text-sm mt-1 mb-4">Wer die meisten Stimmen erhalten hat, verliert ein Leben.</p>
-
-      <div class="bg-slate-950/60 border border-slate-800 rounded-2xl p-3 mb-4 text-left">
-        <p class="text-xs text-amber-400 font-bold mb-2 flex items-center justify-between">
-          <span>⏸️ Aussetzen für den nächsten Ablauf aktivieren / deaktivieren:</span>
-          <span class="text-[11px] text-slate-400 font-normal">Klicke bei einem Spieler auf "Aussetzen", wenn er die nächste Runde pausiert</span>
-        </p>
-        <div id="result-summary-box" class="space-y-2.5"></div>
-      </div>
-
-      <div class="flex flex-col sm:flex-row gap-3">
-        <button onclick="returnToLobby()" class="px-5 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold rounded-xl text-sm transition cursor-pointer">
-          🏠 Zurück zur Lobby
-        </button>
-        <button onclick="nextRoundOrGame()" class="flex-1 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-extrabold rounded-xl text-base shadow-lg transition cursor-pointer">
-          Nächsten Ablauf starten ➔
-        </button>
-      </div>
-    </div>
-
   </main>
 
   <!-- ADMIN MODAL -->
   <div id="admin-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
-    <div class="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-      <div class="px-6 py-4 bg-slate-950/80 border-b border-slate-800 flex items-center justify-between">
-        <h3 class="font-extrabold text-base text-amber-400 flex items-center gap-2">🛠️ Admin-Bereich (Der Dümmste fliegt)</h3>
-        <button onclick="closeAdminModal()" class="text-slate-400 hover:text-white text-lg font-bold cursor-pointer">✕</button>
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="flex items-center justify-between p-5 border-b border-slate-800">
+        <div class="flex items-center gap-2"><span class="text-base">🛠️</span><h3 class="text-base font-extrabold text-white">Admin-Dashboard</h3></div>
+        <button onclick="closeAdminModal()" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center font-bold cursor-pointer">✕</button>
+      </div>
+      <div id="admin-login-box" class="p-6 space-y-4">
+        <p class="text-xs text-slate-400">Bitte gib das Admin-Passwort ein, um Avatare, Fragen und Einstellungen zu verwalten:</p>
+        <input type="password" id="admin-password-input" placeholder="Passwort..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm" onkeydown="if(event.key==='Enter')checkAdminPassword()">
+        <button onclick="checkAdminPassword()" class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold rounded-xl text-xs transition cursor-pointer">Einloggen</button>
       </div>
 
-      <div id="admin-login-box" class="p-8 text-center space-y-4 my-auto">
-        <div class="w-16 h-16 bg-amber-500/20 text-amber-400 rounded-2xl mx-auto flex items-center justify-center text-2xl font-bold">🔒</div>
-        <h4 class="text-lg font-bold text-white">Passwort erforderlich ('minati')</h4>
-        <div class="max-w-xs mx-auto flex gap-2">
-          <input type="password" id="admin-password-input" placeholder="Passwort..." class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-amber-500" onkeydown="if(event.key==='Enter')checkAdminPassword()">
-          <button onclick="checkAdminPassword()" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-sm transition cursor-pointer">Login</button>
-        </div>
-      </div>
       <div id="admin-dashboard" class="flex-1 overflow-y-auto p-6 space-y-6 hidden">
         <div class="flex border-b border-slate-800 gap-4">
           <button onclick="switchAdminTab('avatars')" id="tab-btn-avatars" class="pb-3 text-sm font-bold text-amber-400 border-b-2 border-amber-400 transition cursor-pointer">Avatare & Kategorien</button>
@@ -343,10 +253,10 @@
           <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800">
             <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Bilder vom Gerät hochladen & Kategorisieren</h4>
             <input type="file" id="admin-file-input" multiple accept="image/*" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-amber-500 file:text-slate-950 hover:file:bg-amber-400 cursor-pointer mb-3" onchange="handleAdminFileUpload(event)">
-            <p class="text-xs text-slate-500">Wähle Bilder aus deiner Galerie. Der Dateiname wird automatisch als Charaktername erkannt.</p>
+            <p class="text-xs text-slate-500">Wähle Bilder aus deiner Galerie. Der Dateiname wird als Name erkannt.</p>
           </div>
           <div>
-            <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3">Deine Charaktere & Kategorien</h4>
+            <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3">Deine Charaktere</h4>
             <div id="admin-avatars-list" class="space-y-3"></div>
           </div>
         </div>
@@ -367,16 +277,6 @@
         <div id="admin-tab-settings" class="space-y-4 hidden">
           <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3">
             <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Globale Admin-Konfiguration</h4>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">Gesamtzeit pro Durchgang (Minuten: 1 - 5)</label>
-              <select id="admin-matchtime-input" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs">
-                <option value="1">1 Minute</option>
-                <option value="2" selected>2 Minuten</option>
-                <option value="3">3 Minuten</option>
-                <option value="4">4 Minuten</option>
-                <option value="5">5 Minuten</option>
-              </select>
-            </div>
             <div>
               <label class="block text-xs text-slate-400 mb-1">Standard Antwortzeit pro Frage (Sekunden)</label>
               <input type="number" id="admin-timer-input" value="15" min="3" max="60" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs">
@@ -416,53 +316,23 @@
     ];
 
     let state = {
-      screen: 'lobby',
-      isAdminLoggedIn: false,
-      players: [
-        { id: 'p1', name: 'Naruto', avatarIndex: 0, lives: 3, isBot: false, score: 0, team: 'rot', skippedNext: false }
-      ],
-      activeEditingPlayerIndex: 0,
-      matchTimeMinutes: 2,
-      timerSeconds: 15,
-      votingSeconds: 120,
-      startLives: 3,
-      teamsMode: 'off',
-      currentRound: 1,
-      currentQuestionIndex: 0,
-      activePlayerTurnIndex: 0,
-      matchTimerInterval: null,
-      questionTimerInterval: null,
-      votingTimerInterval: null,
-      matchTimeRemaining: 120,
-      questionTimeRemaining: 15,
-      votingTimeRemaining: 120,
-      gamePaused: false,
-      voiceEnabled: true,
-      voiceVolume: 1.0,
-      audioActive: true,
-      currentAnswers: {},
-      votes: {},
-      hostSolutionsVisible: false,
-      peer: null,
-      conn: null,
-      isHost: true,
-      roomId: null
+      screen: 'lobby', isAdminLoggedIn: false, activeEditingPlayerIndex: 0,
+      players: [{ id: 'p1', name: 'Naruto', avatarIndex: 0, lives: 3, isBot: false, score: 0, team: 'rot', skippedNext: false }],
+      matchTimeMinutes: 2, timerSeconds: 15, votingSeconds: 120, startLives: 3, teamsMode: 'off',
+      currentRound: 1, currentQuestionIndex: 0, activePlayerTurnIndex: 0,
+      matchTimerInterval: null, questionTimerInterval: null, votingTimerInterval: null,
+      matchTimeRemaining: 120, questionTimeRemaining: 15, votingTimeRemaining: 120,
+      gamePaused: false, voiceEnabled: true, voiceVolume: 1.0, audioActive: true,
+      currentAnswers: {}, votes: {}, hostSolutionsVisible: false, peer: null, conn: null, isHost: true, roomId: null
     };
 
     window.addEventListener('DOMContentLoaded', () => {
-      loadLocalStorageData();
-      renderLobbyAvatars();
-      renderLobbyPlayers();
-      renderAdminAvatars();
-      renderAdminQuestions();
-      initPeerJS();
+      loadLocalStorageData(); renderLobbyAvatars(); renderLobbyPlayers(); renderAdminAvatars(); renderAdminQuestions(); initPeerJS();
     });
 
     function loadLocalStorageData() {
-      const savedAvs = localStorage.getItem('ddf_avatars');
-      if (savedAvs) { try { defaultAvatars = JSON.parse(savedAvs); } catch(e){} }
-      const savedQs = localStorage.getItem('ddf_questions');
-      if (savedQs) { try { defaultQuestions = JSON.parse(savedQs); } catch(e){} }
+      const savedAvs = localStorage.getItem('ddf_avatars'); if (savedAvs) { try { defaultAvatars = JSON.parse(savedAvs); } catch(e){} }
+      const savedQs = localStorage.getItem('ddf_questions'); if (savedQs) { try { defaultQuestions = JSON.parse(savedQs); } catch(e){} }
     }
 
     function saveLocalStorageData() {
@@ -471,30 +341,19 @@
     }
 
     function switchScreen(screenId) {
-      ['screen-lobby', 'screen-game', 'screen-voting', 'screen-result'].forEach(id => {
-        document.getElementById(id).classList.add('hidden');
-      });
-      document.getElementById('screen-' + screenId).classList.remove('hidden');
-      state.screen = screenId;
+      ['screen-lobby', 'screen-game', 'screen-voting', 'screen-result'].forEach(id => document.getElementById(id).classList.add('hidden'));
+      document.getElementById('screen-' + screenId).classList.remove('hidden'); state.screen = screenId;
     }
 
-    // --- SPRACHAUSGABE MIT LAUTSTÄRKE & WIEDERHOLEN ---
+    // --- SPRACHAUSGABE & MIKROFON ---
     function speakText(text, callback) {
-      if (!state.voiceEnabled || !('speechSynthesis' in window)) {
-        if (callback) callback();
-        return;
-      }
+      if (!state.voiceEnabled || !('speechSynthesis' in window)) { if (callback) callback(); return; }
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'de-DE';
-      utterance.rate = 1.0;
-      utterance.pitch = 0.9;
-      utterance.volume = state.voiceVolume; // Lautstärke aktiv steuerbar
-
+      utterance.lang = 'de-DE'; utterance.rate = 1.0; utterance.pitch = 0.9; utterance.volume = state.voiceVolume;
       const voices = window.speechSynthesis.getVoices();
-      const deVoice = voices.find(v => v.lang.startsWith('de') && (v.name.includes('Male') || v.name.includes('Markus') || v.name.includes('Stefan') || v.name.includes('Google') || v.name.includes('Microsoft')));
+      const deVoice = voices.find(v => v.lang.startsWith('de') && (v.name.includes('Male') || v.name.includes('Markus') || v.name.includes('Stefan')));
       if (deVoice) utterance.voice = deVoice;
-
       utterance.onend = () => { if (callback) callback(); };
       utterance.onerror = () => { if (callback) callback(); };
       window.speechSynthesis.speak(utterance);
@@ -503,222 +362,95 @@
     function toggleVoiceSpeech() {
       state.voiceEnabled = !state.voiceEnabled;
       const btn = document.getElementById('voice-toggle-btn');
-      if (state.voiceEnabled) {
-        btn.textContent = '🗣️ Stimme: An';
-        btn.classList.remove('bg-slate-800', 'text-slate-400');
-        btn.classList.add('bg-amber-500/20', 'text-amber-300');
-      } else {
-        btn.textContent = '🔇 Stimme: Aus';
-        btn.classList.remove('bg-amber-500/20', 'text-amber-300');
-        btn.classList.add('bg-slate-800', 'text-slate-400');
-      }
+      if (state.voiceEnabled) { btn.textContent = '🗣️ Stimme: An'; btn.classList.remove('bg-slate-800', 'text-slate-400'); btn.classList.add('bg-amber-500/20', 'text-amber-300'); }
+      else { btn.textContent = '🔇 Stimme: Aus'; btn.classList.remove('bg-amber-500/20', 'text-amber-300'); btn.classList.add('bg-slate-800', 'text-slate-400'); }
     }
 
-    function updateVoiceVolume(val) {
-      state.voiceVolume = parseFloat(val);
-    }
-
+    function updateVoiceVolume(val) { state.voiceVolume = parseFloat(val); }
     function repeatCurrentQuestionVoice() {
       const qText = document.getElementById('game-question-text').textContent;
       const pName = state.players[state.activePlayerTurnIndex]?.name || 'Spieler';
       speakText(`${pName}, deine Frage lautet: ${qText}`);
     }
-    // --- SPRACHEINGABE & SPIELSTEUERUNG ---
+
     let recognition = null;
     function toggleSpeechRecognition() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        alert('Dein Browser unterstützt keine automatische Spracheingabe. Bitte tippe deine Antwort ein.');
-        return;
-      }
-      if (recognition) {
-        recognition.stop();
-        recognition = null;
-        document.getElementById('mic-btn').classList.remove('bg-rose-600', 'animate-pulse');
-        return;
-      }
-
-      recognition = new SpeechRecognition();
-      recognition.lang = 'de-DE';
-      recognition.interimResults = false;
-      recognition.maxAlternatives = 1;
-
-      const micBtn = document.getElementById('mic-btn');
-      micBtn.classList.add('bg-rose-600', 'animate-pulse');
-
-      let speechTimeout = null;
-
+      if (!SpeechRecognition) { alert('Dein Browser unterstützt keine automatische Spracheingabe.'); return; }
+      if (recognition) { recognition.stop(); recognition = null; document.getElementById('mic-btn').classList.remove('bg-rose-600', 'animate-pulse'); return; }
+      recognition = new SpeechRecognition(); recognition.lang = 'de-DE';
+      const micBtn = document.getElementById('mic-btn'); micBtn.classList.add('bg-rose-600', 'animate-pulse');
       recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        document.getElementById('player-answer-input').value = transcript;
-        micBtn.classList.remove('bg-rose-600', 'animate-pulse');
-        recognition = null;
-
-        clearTimeout(speechTimeout);
-        speechTimeout = setTimeout(() => {
-          submitPlayerAnswer();
-        }, 1000);
+        document.getElementById('player-answer-input').value = event.results[0][0].transcript;
+        micBtn.classList.remove('bg-rose-600', 'animate-pulse'); recognition = null;
+        setTimeout(() => submitPlayerAnswer(), 1000);
       };
-
-      recognition.onerror = () => {
-        micBtn.classList.remove('bg-rose-600', 'animate-pulse');
-        recognition = null;
-      };
-
-      recognition.onend = () => {
-        micBtn.classList.remove('bg-rose-600', 'animate-pulse');
-        recognition = null;
-      };
-
+      recognition.onerror = () => { micBtn.classList.remove('bg-rose-600', 'animate-pulse'); recognition = null; };
+      recognition.onend = () => { micBtn.classList.remove('bg-rose-600', 'animate-pulse'); recognition = null; };
       recognition.start();
     }
 
+    // --- LOBBY LOGIK ---
     function renderLobbyAvatars() {
-      const container = document.getElementById('lobby-avatars-container');
-      container.innerHTML = '';
+      const container = document.getElementById('lobby-avatars-container'); container.innerHTML = '';
+      const franchises = {};
       defaultAvatars.forEach((av, idx) => {
-        const isTaken = state.players.some(p => p.avatarIndex === idx);
-        const card = document.createElement('div');
-        card.className = `flex items-center justify-between p-3 rounded-2xl border transition ${isTaken ? 'bg-slate-950/40 border-slate-900 opacity-40 cursor-not-allowed' : 'bg-slate-900 border-slate-800 hover:border-rose-500 cursor-pointer'}`;
-        card.innerHTML = `
-          <div class="flex items-center gap-3">
-            <img src="${av.img}" alt="${av.name}" class="w-12 h-12 rounded-xl object-cover border border-slate-700">
-            <div>
-              <h5 class="text-xs font-extrabold text-white">${av.name}</h5>
-              <span class="text-[10px] text-slate-400 uppercase tracking-widest">${av.franchise}</span>
-            </div>
-          </div>
-          <span class="text-xs font-bold ${isTaken ? 'text-slate-600' : 'text-rose-400'}">${isTaken ? 'Vergeben' : 'Wählen ➔'}</span>
-        `;
-        if (!isTaken) {
-          card.onclick = () => {
-            state.players[state.activeEditingPlayerIndex].avatarIndex = idx;
-            state.players[state.activeEditingPlayerIndex].name = av.name;
-            document.getElementById('player-name-input').value = av.name;
-            renderLobbyAvatars();
-            renderLobbyPlayers();
-            updatePreviewCard();
-          };
-        }
-        container.appendChild(card);
+        const cat = av.franchise || 'Charaktere'; if (!franchises[cat]) franchises[cat] = []; franchises[cat].push({ ...av, originalIndex: idx });
       });
+      for (const [franchise, avs] of Object.entries(franchises)) {
+        const section = document.createElement('div'); section.className = 'mb-4';
+        section.innerHTML = `<div class="flex items-center justify-between mb-2"><span class="text-[11px] font-black text-slate-400 uppercase tracking-widest">${franchise}</span><span class="text-[10px] text-slate-500">${avs.length} Charaktere</span></div>`;
+        const grid = document.createElement('div'); grid.className = 'grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2.5';
+        avs.forEach(av => {
+          const isTaken = state.players.some(p => p.avatarIndex === av.originalIndex);
+          const card = document.createElement('div');
+          card.className = `relative group rounded-xl overflow-hidden border-2 transition cursor-pointer aspect-square bg-slate-950 ${isTaken ? 'border-slate-800 opacity-40 cursor-not-allowed' : 'border-slate-700 hover:border-rose-500 shadow-md'}`;
+          card.innerHTML = `<img src="${av.img}" class="w-full h-full object-cover">
+            <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent p-1 text-center"><span class="block text-[10px] font-bold text-white truncate">${av.name}</span></div>
+            ${isTaken ? '<div class="absolute inset-0 bg-slate-950/60 flex items-center justify-center"><span class="text-[9px] font-bold text-slate-400">Vergeben</span></div>' : ''}`;
+          if (!isTaken) {
+            card.onclick = () => {
+              state.players[state.activeEditingPlayerIndex].avatarIndex = av.originalIndex;
+              state.players[state.activeEditingPlayerIndex].name = av.name;
+              document.getElementById('player-name-input').value = av.name;
+              renderLobbyAvatars(); renderLobbyPlayers(); updatePreviewCard();
+            };
+          }
+          grid.appendChild(card);
+        });
+        section.appendChild(grid); container.appendChild(section);
+      }
       updatePreviewCard();
     }
 
     function updatePreviewCard() {
-      const p = state.players[state.activeEditingPlayerIndex];
-      if (!p) return;
+      const p = state.players[state.activeEditingPlayerIndex]; if (!p) return;
       const av = defaultAvatars[p.avatarIndex] || defaultAvatars[0];
       document.getElementById('preview-avatar-img').src = av.img;
       document.getElementById('editing-player-indicator').textContent = `${p.name} (${p.isBot ? 'Bot' : 'Spieler ' + (state.activeEditingPlayerIndex + 1)})`;
-      
-      const leaderBadge = document.getElementById('preview-leader-badge');
-      if (state.activeEditingPlayerIndex === 0) leaderBadge.classList.remove('hidden');
-      else leaderBadge.classList.add('hidden');
-
-      const teamBadge = document.getElementById('team-assignment-badge');
+      document.getElementById('preview-leader-badge').classList.toggle('hidden', state.activeEditingPlayerIndex !== 0);
       const teamContainer = document.getElementById('team-choice-container');
-      if (state.teamsMode !== 'off') {
-        teamContainer.classList.remove('hidden');
-        teamBadge.textContent = p.team ? `Team: ${p.team.toUpperCase()}` : 'Team: Keins (Zufällig)';
-      } else {
-        teamContainer.classList.add('hidden');
-        teamBadge.textContent = '';
-      }
+      const teamBadge = document.getElementById('team-assignment-badge');
+      if (state.teamsMode !== 'off') { teamContainer.classList.remove('hidden'); teamBadge.textContent = p.team ? `Team: ${p.team.toUpperCase()}` : 'Team: Keins'; }
+      else { teamContainer.classList.add('hidden'); teamBadge.textContent = ''; }
     }
-
-    function renderLobbyPlayers() {
-      const grid = document.getElementById('lobby-players-grid');
-      grid.innerHTML = '';
-      document.getElementById('player-count').textContent = state.players.length;
-
-      state.players.forEach((p, idx) => {
-        const av = defaultAvatars[p.avatarIndex] || defaultAvatars[0];
-        const isActive = state.activeEditingPlayerIndex === idx;
-        const card = document.createElement('div');
-        card.className = `flex items-center gap-3 p-3 rounded-2xl border transition cursor-pointer ${isActive ? 'bg-rose-500/10 border-rose-500 shadow-md' : 'bg-slate-900 border-slate-800 hover:border-slate-700'}`;
-        card.innerHTML = `
-          <div class="relative w-10 h-10 rounded-xl overflow-hidden border border-slate-700 bg-slate-950 flex-shrink-0">
-            <img src="${av.img}" alt="${p.name}" class="w-full h-full object-cover">
-          </div>
-          <div>
-            <div class="flex items-center gap-1.5">
-              <span class="text-xs font-bold text-white">${p.name}</span>
-              ${idx === 0 ? '<span class="text-xs">👑</span>' : ''}
-              ${p.isBot ? '<span class="text-[10px] bg-indigo-500/20 text-indigo-300 px-1.5 py-0.2 rounded">Bot</span>' : ''}
-            </div>
-            <span class="text-[10px] text-slate-400">${p.team ? 'Team: ' + p.team : 'Kein Team'}</span>
-          </div>
-        `;
-        card.onclick = () => {
-          state.activeEditingPlayerIndex = idx;
-          document.getElementById('player-name-input').value = p.name;
-          renderLobbyAvatars();
-          renderLobbyPlayers();
-        };
-        grid.appendChild(card);
-      });
-      document.getElementById('leader-options-box').style.display = 'block';
-    }
-
+    function renderLobbyPlayers() { document.getElementById('player-count').textContent = state.players.length; document.getElementById('leader-options-box').style.display = 'block'; }
     function addHumanPlayer() {
-      const availableAvIdx = defaultAvatars.findIndex((_, idx) => !state.players.some(p => p.avatarIndex === idx));
-      if (availableAvIdx === -1) { alert('Alle Charaktere vergeben!'); return; }
-      state.players.push({
-        id: 'p' + (state.players.length + 1),
-        name: defaultAvatars[availableAvIdx].name,
-        avatarIndex: availableAvIdx,
-        lives: state.startLives,
-        isBot: false,
-        score: 0,
-        team: null,
-        skippedNext: false
-      });
-      state.activeEditingPlayerIndex = state.players.length - 1;
-      renderLobbyAvatars();
-      renderLobbyPlayers();
+      const idx = defaultAvatars.findIndex((_, i) => !state.players.some(p => p.avatarIndex === i));
+      if (idx === -1) { alert('Alle Charaktere vergeben!'); return; }
+      state.players.push({ id: 'p' + (state.players.length + 1), name: defaultAvatars[idx].name, avatarIndex: idx, lives: state.startLives, isBot: false, score: 0, team: null, skippedNext: false });
+      state.activeEditingPlayerIndex = state.players.length - 1; renderLobbyAvatars(); renderLobbyPlayers();
     }
-
     function addBotPlayer() {
-      const availableAvIdx = defaultAvatars.findIndex((_, idx) => !state.players.some(p => p.avatarIndex === idx));
-      if (availableAvIdx === -1) { alert('Alle Charaktere vergeben!'); return; }
-      state.players.push({
-        id: 'bot' + (state.players.length + 1),
-        name: 'Bot ' + defaultAvatars[availableAvIdx].name,
-        avatarIndex: availableAvIdx,
-        lives: state.startLives,
-        isBot: true,
-        score: 0,
-        team: null,
-        skippedNext: false
-      });
-      renderLobbyAvatars();
-      renderLobbyPlayers();
+      const idx = defaultAvatars.findIndex((_, i) => !state.players.some(p => p.avatarIndex === i));
+      if (idx === -1) { alert('Alle Charaktere vergeben!'); return; }
+      state.players.push({ id: 'bot' + (state.players.length + 1), name: 'Bot ' + defaultAvatars[idx].name, avatarIndex: idx, lives: state.startLives, isBot: true, score: 0, team: null, skippedNext: false });
+      renderLobbyAvatars(); renderLobbyPlayers();
     }
-
-    function updateActivePlayerName(val) {
-      if (state.players[state.activeEditingPlayerIndex]) {
-        state.players[state.activeEditingPlayerIndex].name = val;
-        renderLobbyPlayers();
-      }
-    }
-
-    function resetPlayerName() {
-      const p = state.players[state.activeEditingPlayerIndex];
-      const av = defaultAvatars[p.avatarIndex];
-      p.name = av.name;
-      document.getElementById('player-name-input').value = av.name;
-      renderLobbyPlayers();
-    }
-
-    function assignTeamToEditingPlayer(team) {
-      if (state.players[state.activeEditingPlayerIndex]) {
-        state.players[state.activeEditingPlayerIndex].team = team;
-        updatePreviewCard();
-        renderLobbyPlayers();
-      }
-    }
-
+    function updateActivePlayerName(val) { if (state.players[state.activeEditingPlayerIndex]) state.players[state.activeEditingPlayerIndex].name = val; }
+    function resetPlayerName() { const p = state.players[state.activeEditingPlayerIndex]; p.name = defaultAvatars[p.avatarIndex].name; document.getElementById('player-name-input').value = p.name; }
+    function assignTeamToEditingPlayer(team) { if (state.players[state.activeEditingPlayerIndex]) { state.players[state.activeEditingPlayerIndex].team = team; updatePreviewCard(); } }
+    
     function updateLeaderSettings() {
       state.matchTimeMinutes = parseInt(document.getElementById('leader-matchtime-select').value);
       state.timerSeconds = parseInt(document.getElementById('leader-timer-select').value);
@@ -727,374 +459,123 @@
       state.players.forEach(p => p.lives = state.startLives);
     }
 
+    // --- SPIEL LOGIK ---
     function startMatch() {
-      state.currentRound = 1;
-      state.currentQuestionIndex = 0;
-      state.activePlayerTurnIndex = 0;
-      state.matchTimeRemaining = state.matchTimeMinutes * 60;
-      switchScreen('game');
-      startMatchTimer();
-      loadNextQuestionForActivePlayer();
+      state.currentRound = 1; state.currentQuestionIndex = 0; state.activePlayerTurnIndex = 0;
+      state.matchTimeRemaining = state.matchTimeMinutes * 60; switchScreen('game'); startMatchTimer(); loadNextQuestionForActivePlayer();
     }
-
     function startMatchTimer() {
       clearInterval(state.matchTimerInterval);
       state.matchTimerInterval = setInterval(() => {
         if (!state.gamePaused) {
           state.matchTimeRemaining--;
-          const m = Math.floor(state.matchTimeRemaining / 60);
-          const s = state.matchTimeRemaining % 60;
-          document.getElementById('match-total-timer-display').textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-          if (state.matchTimeRemaining <= 0) {
-            clearInterval(state.matchTimerInterval);
-            startVotingPhase();
-          }
+          document.getElementById('match-total-timer-display').textContent = `${Math.floor(state.matchTimeRemaining / 60).toString().padStart(2,'0')}:${(state.matchTimeRemaining % 60).toString().padStart(2,'0')}`;
+          if (state.matchTimeRemaining <= 0) { clearInterval(state.matchTimerInterval); startVotingPhase(); }
         }
       }, 1000);
     }
-
     function loadNextQuestionForActivePlayer() {
       while (state.players[state.activePlayerTurnIndex]?.skippedNext) {
-        state.players[state.activePlayerTurnIndex].skippedNext = false;
-        state.activePlayerTurnIndex = (state.activePlayerTurnIndex + 1) % state.players.length;
+        state.players[state.activePlayerTurnIndex].skippedNext = false; state.activePlayerTurnIndex = (state.activePlayerTurnIndex + 1) % state.players.length;
       }
-
-      const p = state.players[state.activePlayerTurnIndex];
-      const av = defaultAvatars[p.avatarIndex];
-      document.getElementById('game-current-player-name').textContent = p.name;
-      document.getElementById('active-player-title').textContent = p.name;
-      document.getElementById('game-active-avatar-img').src = av.img;
-      document.getElementById('game-round-badge').textContent = `Durchgang ${state.currentRound}`;
-
+      const p = state.players[state.activePlayerTurnIndex]; const av = defaultAvatars[p.avatarIndex];
+      document.getElementById('game-current-player-name').textContent = p.name; document.getElementById('active-player-title').textContent = p.name;
+      document.getElementById('game-active-avatar-img').src = av.img; document.getElementById('game-round-badge').textContent = `Durchgang ${state.currentRound}`;
       const q = defaultQuestions[state.currentQuestionIndex % defaultQuestions.length];
-      document.getElementById('game-question-text').textContent = q.text;
-      document.getElementById('player-answer-input').value = '';
-
-      if (state.voiceEnabled) {
-        speakText(`${p.name}, deine Frage lautet: ${q.text}`);
-      }
-
-      if (p.isBot) {
-        setTimeout(() => {
-          const botAnswers = ['Weiß nicht', '42', 'Keine Ahnung', 'Batman', 'Kartoffel'];
-          const randomAns = botAnswers[Math.floor(Math.random() * botAnswers.length)];
-          document.getElementById('player-answer-input').value = randomAns;
-          submitPlayerAnswer();
-        }, 2000);
-      } else {
-        startQuestionTimer();
-      }
+      document.getElementById('game-question-text').textContent = q.text; document.getElementById('player-answer-input').value = '';
+      if (state.voiceEnabled) speakText(`${p.name}, deine Frage lautet: ${q.text}`);
+      if (p.isBot) { setTimeout(() => { document.getElementById('player-answer-input').value = 'Weiß nicht'; submitPlayerAnswer(); }, 2000); }
+      else { startQuestionTimer(); }
     }
-
     function startQuestionTimer() {
-      clearInterval(state.questionTimerInterval);
-      state.questionTimeRemaining = state.timerSeconds;
-      document.getElementById('game-timer-display').textContent = state.questionTimeRemaining;
-
+      clearInterval(state.questionTimerInterval); state.questionTimeRemaining = state.timerSeconds; document.getElementById('game-timer-display').textContent = state.questionTimeRemaining;
       state.questionTimerInterval = setInterval(() => {
         if (!state.gamePaused) {
-          state.questionTimeRemaining--;
-          document.getElementById('game-timer-display').textContent = state.questionTimeRemaining;
-          if (state.questionTimeRemaining <= 0) {
-            clearInterval(state.questionTimerInterval);
-            submitPlayerAnswer();
-          }
+          state.questionTimeRemaining--; document.getElementById('game-timer-display').textContent = state.questionTimeRemaining;
+          if (state.questionTimeRemaining <= 0) { clearInterval(state.questionTimerInterval); submitPlayerAnswer(); }
         }
       }, 1000);
     }
-
     function submitPlayerAnswer() {
       clearInterval(state.questionTimerInterval);
-      const p = state.players[state.activePlayerTurnIndex];
-      const ansVal = document.getElementById('player-answer-input').value.trim() || '(Keine Antwort)';
-      state.currentAnswers[p.id] = { questionIndex: state.currentQuestionIndex, answer: ansVal };
-
-      state.currentQuestionIndex++;
-      state.activePlayerTurnIndex = (state.activePlayerTurnIndex + 1) % state.players.length;
-
-      if (state.matchTimeRemaining <= 0) {
-        startVotingPhase();
-      } else {
-        loadNextQuestionForActivePlayer();
-      }
+      state.currentAnswers[state.players[state.activePlayerTurnIndex].id] = { questionIndex: state.currentQuestionIndex, answer: document.getElementById('player-answer-input').value.trim() || '(Keine Antwort)' };
+      state.currentQuestionIndex++; state.activePlayerTurnIndex = (state.activePlayerTurnIndex + 1) % state.players.length;
+      if (state.matchTimeRemaining <= 0) startVotingPhase(); else loadNextQuestionForActivePlayer();
     }
+    function togglePauseGame() { state.gamePaused = !state.gamePaused; document.getElementById('pause-btn').textContent = state.gamePaused ? '▶️ Fortsetzen' : '⏸️ Pause'; }
 
-    function togglePauseGame() {
-      state.gamePaused = !state.gamePaused;
-      document.getElementById('pause-btn').textContent = state.gamePaused ? '▶️ Fortsetzen' : '⏸️ Pause';
-    }
-
+    // --- VOTING LOGIK ---
     function startVotingPhase() {
-      clearInterval(state.matchTimerInterval);
-      clearInterval(state.questionTimerInterval);
-      switchScreen('voting');
-
-      const grid = document.getElementById('voting-answers-grid');
-      grid.innerHTML = '';
-      state.votes = {};
-
+      clearInterval(state.matchTimerInterval); clearInterval(state.questionTimerInterval); switchScreen('voting');
+      const grid = document.getElementById('voting-answers-grid'); grid.innerHTML = ''; state.votes = {};
       state.players.forEach(p => {
-        state.votes[p.id] = 0;
-        const ansObj = state.currentAnswers[p.id] || { answer: '(Nicht teilgenommen)' };
-        const q = defaultQuestions[ansObj.questionIndex % defaultQuestions.length] || defaultQuestions[0];
-        const av = defaultAvatars[p.avatarIndex];
-
-        const card = document.createElement('div');
-        card.className = 'glass rounded-2xl p-4 border border-slate-800 flex flex-col justify-between';
-        card.innerHTML = `
-          <div>
-            <div class="flex items-center gap-3 mb-3">
-              <img src="${av.img}" alt="${p.name}" class="w-10 h-10 rounded-xl object-cover border border-slate-700">
-              <div>
-                <h4 class="text-xs font-bold text-white">${p.name}</h4>
-                <span class="text-[10px] text-slate-400">Antwort auf: "${q.text}"</span>
-              </div>
-            </div>
-            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 mb-3">
-              <p class="text-sm font-semibold text-rose-400 answer-text-box">"${ansObj.answer}"</p>
-              <p class="text-[11px] text-indigo-300 mt-1 hidden host-solution-item">Musterlösung: ${q.answer}</p>
-            </div>
-          </div>
-          <div class="flex items-center justify-between pt-2 border-t border-slate-800">
-            <span class="text-xs font-bold text-slate-300">Stimmen: <span id="vote-count-${p.id}" class="text-amber-400">0</span></span>
-            <button onclick="addVoteForPlayer('${p.id}')" class="px-3 py-1.5 bg-rose-600/30 hover:bg-rose-600/50 text-rose-300 border border-rose-500/40 rounded-xl text-xs font-bold transition cursor-pointer">
-              👎 Dummste Stimme geben
-            </button>
-          </div>
-        `;
+        state.votes[p.id] = 0; const ansObj = state.currentAnswers[p.id] || { answer: '(Nicht teilgenommen)' };
+        const q = defaultQuestions[ansObj.questionIndex % defaultQuestions.length] || defaultQuestions[0]; const av = defaultAvatars[p.avatarIndex];
+        const card = document.createElement('div'); card.className = 'glass rounded-2xl p-4 border border-slate-800 flex flex-col justify-between';
+        card.innerHTML = `<div><div class="flex items-center gap-3 mb-3"><img src="${av.img}" class="w-10 h-10 rounded-xl object-cover border border-slate-700"><div><h4 class="text-xs font-bold text-white">${p.name}</h4><span class="text-[10px] text-slate-400">Antwort auf: "${q.text}"</span></div></div><div class="bg-slate-950 p-3 rounded-xl border border-slate-800 mb-3"><p class="text-sm font-semibold text-rose-400">"${ansObj.answer}"</p><p class="text-[11px] text-indigo-300 mt-1 hidden host-solution-item">Musterlösung: ${q.answer}</p></div></div><div class="flex items-center justify-between pt-2 border-t border-slate-800"><span class="text-xs font-bold text-slate-300">Stimmen: <span id="vote-count-${p.id}" class="text-amber-400">0</span></span><button onclick="addVoteForPlayer('${p.id}')" class="px-3 py-1.5 bg-rose-600/30 text-rose-300 border border-rose-500/40 rounded-xl text-xs font-bold">👎 Stimme</button></div>`;
         grid.appendChild(card);
       });
-
       startVotingTimer();
     }
-
     function startVotingTimer() {
-      clearInterval(state.votingTimerInterval);
-      state.votingTimeRemaining = state.votingSeconds;
-      document.getElementById('voting-timer-display').textContent = `${state.votingTimeRemaining}s`;
-
-      state.votingTimerInterval = setInterval(() => {
-        state.votingTimeRemaining--;
-        document.getElementById('voting-timer-display').textContent = `${state.votingTimeRemaining}s`;
-        if (state.votingTimeRemaining <= 0) {
-          clearInterval(state.votingTimerInterval);
-          forceEndVoting();
-        }
-      }, 1000);
+      clearInterval(state.votingTimerInterval); state.votingTimeRemaining = state.votingSeconds; document.getElementById('voting-timer-display').textContent = `${state.votingTimeRemaining}s`;
+      state.votingTimerInterval = setInterval(() => { state.votingTimeRemaining--; document.getElementById('voting-timer-display').textContent = `${state.votingTimeRemaining}s`; if (state.votingTimeRemaining <= 0) forceEndVoting(); }, 1000);
     }
-
-    function addVoteForPlayer(pid) {
-      state.votes[pid] = (state.votes[pid] || 0) + 1;
-      document.getElementById(`vote-count-${pid}`).textContent = state.votes[pid];
-    }
-
-    function toggleHostSolutions() {
-      state.hostSolutionsVisible = !state.hostSolutionsVisible;
-      document.querySelectorAll('.host-solution-item').forEach(el => {
-        if (state.hostSolutionsVisible) el.classList.remove('hidden');
-        else el.classList.add('hidden');
-      });
-      document.getElementById('host-solutions-btn').textContent = state.hostSolutionsVisible ? '🔑 Musterlösungen verstecken' : '🔑 Musterlösungen anzeigen';
-    }
-
+    function addVoteForPlayer(pid) { state.votes[pid] = (state.votes[pid] || 0) + 1; document.getElementById(`vote-count-${pid}`).textContent = state.votes[pid]; }
+    function toggleHostSolutions() { state.hostSolutionsVisible = !state.hostSolutionsVisible; document.querySelectorAll('.host-solution-item').forEach(el => el.classList.toggle('hidden', !state.hostSolutionsVisible)); document.getElementById('host-solutions-btn').textContent = state.hostSolutionsVisible ? '🔑 Musterlösungen verstecken' : '🔑 Musterlösungen anzeigen'; }
     function forceEndVoting() {
-      clearInterval(state.votingTimerInterval);
-      switchScreen('result');
-
-      let maxVotes = -1;
-      let loserIds = [];
-      Object.keys(state.votes).forEach(pid => {
-        if (state.votes[pid] > maxVotes) {
-          maxVotes = state.votes[pid];
-          loserIds = [pid];
-        } else if (state.votes[pid] === maxVotes) {
-          loserIds.push(pid);
-        }
-      });
-
-      const summaryBox = document.getElementById('result-summary-box');
-      summaryBox.innerHTML = '';
-
+      clearInterval(state.votingTimerInterval); switchScreen('result');
+      let maxVotes = -1, loserIds = [];
+      Object.keys(state.votes).forEach(pid => { if (state.votes[pid] > maxVotes) { maxVotes = state.votes[pid]; loserIds = [pid]; } else if (state.votes[pid] === maxVotes) { loserIds.push(pid); } });
+      const summaryBox = document.getElementById('result-summary-box'); summaryBox.innerHTML = '';
       state.players.forEach(p => {
-        const isLoser = loserIds.includes(p.id);
-        if (isLoser) {
-          p.lives = Math.max(0, p.lives - 1);
-        }
-
-        const row = document.createElement('div');
-        row.className = `flex items-center justify-between p-3 rounded-xl border ${isLoser ? 'bg-rose-500/10 border-rose-500/40' : 'bg-slate-900 border-slate-800'}`;
-        row.innerHTML = `
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-bold text-white">${p.name}</span>
-            ${isLoser ? '<span class="text-[10px] bg-rose-500 text-white px-1.5 py-0.5 rounded font-bold">Verliert 1 Leben! (-1 ❤️)</span>' : ''}
-          </div>
-          <div class="flex items-center gap-3">
-            <span class="text-xs text-slate-400">Leben: ${'❤️'.repeat(p.lives)}</span>
-            <label class="text-xs text-amber-400 flex items-center gap-1 cursor-pointer">
-              <input type="checkbox" ${p.skippedNext ? 'checked' : ''} onchange="togglePlayerSkip('${p.id}')" class="rounded bg-slate-950 border-slate-700"> Aussetzen
-            </label>
-          </div>
-        `;
+        const isLoser = loserIds.includes(p.id); if (isLoser) p.lives = Math.max(0, p.lives - 1);
+        const row = document.createElement('div'); row.className = `flex items-center justify-between p-3 rounded-xl border ${isLoser ? 'bg-rose-500/10 border-rose-500/40' : 'bg-slate-900 border-slate-800'}`;
+        row.innerHTML = `<div class="flex items-center gap-2"><span class="text-xs font-bold text-white">${p.name}</span>${isLoser ? '<span class="text-[10px] bg-rose-500 text-white px-1.5 py-0.5 rounded font-bold">-1 Leben! (-1 ❤️)</span>' : ''}</div><span class="text-xs text-slate-400">Leben: ${'❤️'.repeat(p.lives)}</span>`;
         summaryBox.appendChild(row);
       });
     }
+    function nextRoundOrGame() { state.currentRound++; state.currentAnswers = {}; state.votes = {}; startMatch(); }
+    function returnToLobby() { clearInterval(state.matchTimerInterval); clearInterval(state.questionTimerInterval); clearInterval(state.votingTimerInterval); switchScreen('lobby'); }
+    function restartMatchSameChars() { state.players.forEach(p => p.lives = state.startLives); startMatch(); }
 
-    function togglePlayerSkip(pid) {
-      const p = state.players.find(x => x.id === pid);
-      if (p) p.skippedNext = !p.skippedNext;
-    }
-
-    function nextRoundOrGame() {
-      state.currentRound++;
-      state.currentAnswers = {};
-      state.votes = {};
-      startMatch();
-    }
-
-    function returnToLobby() {
-      clearInterval(state.matchTimerInterval);
-      clearInterval(state.questionTimerInterval);
-      clearInterval(state.votingTimerInterval);
-      switchScreen('lobby');
-    }
-
-    function restartMatchSameChars() {
-      state.players.forEach(p => p.lives = state.startLives);
-      startMatch();
-    }
-
+    // --- ADMIN LOGIK & PEERJS ---
     function openAdminModal() { document.getElementById('admin-modal').classList.remove('hidden'); }
     function closeAdminModal() { document.getElementById('admin-modal').classList.add('hidden'); }
-    
-    function checkAdminPassword() {
-      const pass = document.getElementById('admin-password-input').value;
-      if (pass === 'minati') {
-        state.isAdminLoggedIn = true;
-        document.getElementById('admin-login-box').classList.add('hidden');
-        document.getElementById('admin-dashboard').classList.remove('hidden');
-      } else {
-        alert('Falsches Passwort!');
-      }
-    }
-
-    function switchAdminTab(tab) {
-      ['avatars', 'questions', 'settings'].forEach(t => {
-        document.getElementById('admin-tab-' + t).classList.add('hidden');
-        document.getElementById('tab-btn-' + t).className = 'pb-3 text-sm font-bold text-slate-400 hover:text-white transition cursor-pointer';
-      });
-      document.getElementById('admin-tab-' + tab).classList.remove('hidden');
-      document.getElementById('tab-btn-' + tab).className = 'pb-3 text-sm font-bold text-amber-400 border-b-2 border-amber-400 transition cursor-pointer';
-    }
-
+    function checkAdminPassword() { if (document.getElementById('admin-password-input').value === 'minati') { state.isAdminLoggedIn = true; document.getElementById('admin-login-box').classList.add('hidden'); document.getElementById('admin-dashboard').classList.remove('hidden'); } else alert('Falsches Passwort!'); }
+    function switchAdminTab(tab) { ['avatars', 'questions', 'settings'].forEach(t => { document.getElementById('admin-tab-' + t).classList.add('hidden'); document.getElementById('tab-btn-' + t).className = 'pb-3 text-sm font-bold text-slate-400 hover:text-white transition cursor-pointer'; }); document.getElementById('admin-tab-' + tab).classList.remove('hidden'); document.getElementById('tab-btn-' + tab).className = 'pb-3 text-sm font-bold text-amber-400 border-b-2 border-amber-400 transition cursor-pointer'; }
     function renderAdminAvatars() {
-      const list = document.getElementById('admin-avatars-list');
-      if (!list) return;
-      list.innerHTML = '';
-      defaultAvatars.forEach((av, idx) => {
-        const item = document.createElement('div');
-        item.className = 'flex items-center justify-between bg-slate-950 p-2.5 rounded-xl border border-slate-800';
-        item.innerHTML = `
-          <div class="flex items-center gap-2">
-            <img src="${av.img}" class="w-8 h-8 rounded-lg object-cover">
-            <span class="text-xs font-bold text-white">${av.name} (${av.franchise})</span>
-          </div>
-          <button onclick="deleteAdminAvatar(${idx})" class="text-xs text-rose-400 hover:underline cursor-pointer">Löschen</button>
-        `;
-        list.appendChild(item);
-      });
+      const list = document.getElementById('admin-avatars-list'); if (!list) return; list.innerHTML = '';
+      defaultAvatars.forEach((av, idx) => { const item = document.createElement('div'); item.className = 'flex items-center justify-between bg-slate-950 p-2.5 rounded-xl border border-slate-800'; item.innerHTML = `<div class="flex items-center gap-2"><img src="${av.img}" class="w-8 h-8 rounded-lg object-cover"><span class="text-xs font-bold text-white">${av.name} (${av.franchise})</span></div><button onclick="deleteAdminAvatar(${idx})" class="text-xs text-rose-400 hover:underline cursor-pointer">Löschen</button>`; list.appendChild(item); });
     }
-
     function handleAdminFileUpload(event) {
       const files = event.target.files;
       for (let i = 0; i < files.length; i++) {
         const reader = new FileReader();
         reader.onload = (e) => {
-          const name = files[i].name.substring(0, files[i].name.lastIndexOf('.')) || 'Charakter';
-          defaultAvatars.push({ id: 'custom_' + Date.now() + i, name: name, franchise: 'Eigenes', img: e.target.result });
-          saveLocalStorageData();
-          renderAdminAvatars();
-          renderLobbyAvatars();
-        };
-        reader.readAsDataURL(files[i]);
+          defaultAvatars.push({ id: 'custom_' + Date.now() + i, name: files[i].name.split('.')[0] || 'Charakter', franchise: 'Eigenes', img: e.target.result });
+          saveLocalStorageData(); renderAdminAvatars(); renderLobbyAvatars();
+        }; reader.readAsDataURL(files[i]);
       }
     }
-
-    function deleteAdminAvatar(idx) {
-      defaultAvatars.splice(idx, 1);
-      saveLocalStorageData();
-      renderAdminAvatars();
-      renderLobbyAvatars();
-    }
-
+    function deleteAdminAvatar(idx) { defaultAvatars.splice(idx, 1); saveLocalStorageData(); renderAdminAvatars(); renderLobbyAvatars(); }
     function renderAdminQuestions() {
-      const list = document.getElementById('admin-questions-list');
-      if (!list) return;
-      list.innerHTML = '';
+      const list = document.getElementById('admin-questions-list'); if (!list) return; list.innerHTML = '';
       document.getElementById('admin-q-count').textContent = defaultQuestions.length;
-      defaultQuestions.forEach((q, idx) => {
-        const item = document.createElement('div');
-        item.className = 'flex items-center justify-between bg-slate-950 p-2.5 rounded-xl border border-slate-800';
-        item.innerHTML = `
-          <div>
-            <p class="text-xs font-bold text-white">${q.text}</p>
-            <p class="text-[10px] text-amber-400">Antwort: ${q.answer}</p>
-          </div>
-          <button onclick="deleteAdminQuestion(${idx})" class="text-xs text-rose-400 hover:underline cursor-pointer">Löschen</button>
-        `;
-        list.appendChild(item);
-      });
+      defaultQuestions.forEach((q, idx) => { const item = document.createElement('div'); item.className = 'flex items-center justify-between bg-slate-950 p-2.5 rounded-xl border border-slate-800'; item.innerHTML = `<div><p class="text-xs font-bold text-white">${q.text}</p><p class="text-[10px] text-amber-400">Antwort: ${q.answer}</p></div><button onclick="deleteAdminQuestion(${idx})" class="text-xs text-rose-400 hover:underline cursor-pointer">Löschen</button>`; list.appendChild(item); });
     }
-
     function addNewQuestion() {
-      const text = document.getElementById('new-q-text').value.trim();
-      const answer = document.getElementById('new-q-answer').value.trim();
-      if (!text || !answer) { alert('Bitte Fragetext und Antwort eingeben!'); return; }
-      defaultQuestions.push({ id: 'q_' + Date.now(), text, answer });
-      saveLocalStorageData();
-      renderAdminQuestions();
-      document.getElementById('new-q-text').value = '';
-      document.getElementById('new-q-answer').value = '';
+      const text = document.getElementById('new-q-text').value.trim(); const answer = document.getElementById('new-q-answer').value.trim();
+      if (!text || !answer) { alert('Bitte ausfüllen!'); return; }
+      defaultQuestions.push({ id: 'q_' + Date.now(), text, answer }); saveLocalStorageData(); renderAdminQuestions(); document.getElementById('new-q-text').value = ''; document.getElementById('new-q-answer').value = '';
     }
-
-    function deleteAdminQuestion(idx) {
-      defaultQuestions.splice(idx, 1);
-      saveLocalStorageData();
-      renderAdminQuestions();
-    }
-
-    function saveAdminSettings() {
-      state.timerSeconds = parseInt(document.getElementById('admin-timer-input').value) || 15;
-      state.votingSeconds = parseInt(document.getElementById('admin-votingtime-input').value) || 120;
-      state.startLives = parseInt(document.getElementById('admin-lives-input').value) || 3;
-      alert('Einstellungen erfolgreich übernommen!');
-      closeAdminModal();
-    }
-
-    function toggleAudio() {
-      state.audioActive = !state.audioActive;
-      document.getElementById('audio-btn').textContent = state.audioActive ? '🔊' : '🔇';
-    }
-
-    function copyInviteLink() {
-      const roomId = state.roomId || Math.random().toString(36).substring(2, 8);
-      const link = window.location.origin + window.location.pathname + '?room=' + roomId;
-      navigator.clipboard.writeText(link);
-      alert('Einladungs-Link in die Zwischenablage kopiert!\n' + link);
-    }
-
+    function deleteAdminQuestion(idx) { defaultQuestions.splice(idx, 1); saveLocalStorageData(); renderAdminQuestions(); }
+    function saveAdminSettings() { state.timerSeconds = parseInt(document.getElementById('admin-timer-input').value) || 15; state.votingSeconds = parseInt(document.getElementById('admin-votingtime-input').value) || 120; state.startLives = parseInt(document.getElementById('admin-lives-input').value) || 3; alert('Einstellungen gespeichert!'); closeAdminModal(); }
+    function toggleAudio() { state.audioActive = !state.audioActive; document.getElementById('audio-btn').textContent = state.audioActive ? '🔊' : '🔇'; }
+    function copyInviteLink() { const roomId = state.roomId || Math.random().toString(36).substring(2, 8); const link = window.location.origin + window.location.pathname + '?room=' + roomId; navigator.clipboard.writeText(link); alert('Kopiert!\n' + link); }
     function initPeerJS() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const room = urlParams.get('room');
-      state.roomId = room || 'ddf_' + Math.random().toString(36).substring(2, 8);
-      
-      try {
-        state.peer = new Peer();
-        state.peer.on('open', (id) => {
-          document.getElementById('header-status-text').textContent = 'Bereit (Raum aktiv)';
-        });
-      } catch(e) {
-        document.getElementById('header-status-text').textContent = 'Offline-Modus aktiv';
-      }
+      const urlParams = new URLSearchParams(window.location.search); const room = urlParams.get('room'); state.roomId = room || 'ddf_' + Math.random().toString(36).substring(2, 8);
+      try { state.peer = new Peer(); state.peer.on('open', () => { document.getElementById('header-status-text').textContent = 'Bereit (Raum aktiv)'; }); } catch(e) { document.getElementById('header-status-text').textContent = 'Offline'; }
     }
   </script>
 </body>
