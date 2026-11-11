@@ -26,7 +26,7 @@
     @keyframes pulse-slow { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     .animate-pulse-slow { animation: 3s cubic-bezier(0.4, 0, 0.6, 1) infinite pulse-slow; }
   </style>
-  <!-- PeerJS for P2P Multiplayer -->
+  <!-- PeerJS for P2P Multiplayer (Kein Firebase nötig!) -->
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-full flex flex-col antialiased selection:bg-rose-500 selection:text-white">
@@ -39,36 +39,30 @@
       </div>
       <div>
         <h1 class="text-lg md:text-xl font-extrabold tracking-tight fun-font bg-gradient-to-r from-amber-400 via-rose-400 to-purple-400 bg-clip-text text-transparent">Der Dümmste fliegt</h1>
-        <p class="text-xs text-slate-400 flex items-center gap-1.5"><span id="header-timer-badge" class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> <span id="header-status-text">Lobby & Vorbereitung</span></p>
+        <p class="text-xs text-slate-400 flex items-center gap-1.5"><span id="header-timer-badge" class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> <span id="header-status-text">Lobby & Raum-Bereitschaft</span></p>
       </div>
     </div>
     
     <div class="flex items-center flex-wrap gap-2">
       <div id="host-top-controls" class="flex items-center gap-2">
-        <button onclick="restartMatchSameChars()" id="header-restart-btn" class="px-3.5 py-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-300 font-bold rounded-xl text-xs md:text-sm flex items-center gap-1.5 shadow-sm transition cursor-pointer" title="Spiel mit gleichen Charakteren komplett neu starten (Anführer)">
+        <button onclick="restartMatchSameChars()" id="header-restart-btn" class="px-3.5 py-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-300 font-bold rounded-xl text-xs md:text-sm flex items-center gap-1.5 shadow-sm transition cursor-pointer">
           🔄 Neustart
         </button>
-        <button onclick="returnToLobby()" id="header-lobby-btn" class="px-3.5 py-2 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/50 text-indigo-300 font-bold rounded-xl text-xs md:text-sm flex items-center gap-1.5 shadow-sm transition cursor-pointer" title="Zurück zur Lobby (Charaktere & Einstellungen ändern)">
+        <button onclick="returnToLobby()" id="header-lobby-btn" class="px-3.5 py-2 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/50 text-indigo-300 font-bold rounded-xl text-xs md:text-sm flex items-center gap-1.5 shadow-sm transition cursor-pointer">
           🏠 Lobby
         </button>
       </div>
-      <button onclick="toggleAudio()" id="audio-btn" class="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700/60 transition shadow-sm cursor-pointer" title="Sound an/aus">
-        🔊
-      </button>
-      <button onclick="openAdminModal()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-amber-500/40 text-amber-400 font-semibold rounded-xl text-xs md:text-sm flex items-center gap-2 shadow-sm transition hover:border-amber-500 cursor-pointer">
-        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-        Admin
-      </button>
+      <button onclick="toggleAudio()" id="audio-btn" class="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700/60 transition shadow-sm cursor-pointer" title="Sound an/aus">🔊</button>
+      <button onclick="openAdminModal()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-amber-500/40 text-amber-400 font-semibold rounded-xl text-xs md:text-sm flex items-center gap-2 shadow-sm transition hover:border-amber-500 cursor-pointer">⚙️ Admin</button>
     </div>
   </header>
-
   <!-- MAIN CONTAINER -->
   <main class="flex-1 flex flex-col items-center justify-center p-4 md:p-6 max-w-7xl mx-auto w-full">
 
     <!-- SCREEN 1: LOBBY & PROFIL-SETUP -->
     <div id="screen-lobby" class="w-full max-w-6xl glass rounded-3xl p-5 md:p-8 shadow-2xl">
       <div class="text-center mb-6">
-        <span class="px-3 py-1 bg-amber-500/20 text-amber-400 rounded-full text-xs font-bold uppercase tracking-wider">Anime Lobby & Charakterwahl</span>
+        <span class="px-3 py-1 bg-amber-500/20 text-amber-400 rounded-full text-xs font-bold uppercase tracking-wider">Anime Lobby & PeerJS Multiplayer</span>
         <h2 class="text-2xl md:text-3xl font-extrabold mt-2 fun-font text-white">Wähle deinen Charakter</h2>
         <p class="text-slate-400 text-xs md:text-sm mt-1">Jeder Charakter kann nur 1x gewählt werden! Der erste Spieler ist der Anführer (👑).</p>
       </div>
@@ -105,7 +99,6 @@
           </div>
         </div>
       </div>
-
       <!-- CHARAKTER-AUSWAHL GALERIE -->
       <div class="mb-6">
         <div class="flex items-center justify-between mb-3">
@@ -120,7 +113,7 @@
         <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
           <div>
             <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Mitspieler in der Runde (<span id="player-count">1</span>)</h4>
-            <p class="text-[11px] text-slate-500">Klicke auf einen Mitspieler, um dessen Charakter zu ändern oder "Aussetzen" zu schalten.</p>
+            <p class="text-[11px] text-slate-500">Klicke auf einen Mitspieler, um dessen Charakter zu ändern.</p>
           </div>
           <div class="flex gap-2">
             <button onclick="addHumanPlayer()" class="px-3 py-1.5 bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/30 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
@@ -133,7 +126,6 @@
         </div>
         <div id="lobby-players-grid" class="flex flex-wrap gap-3"></div>
       </div>
-
       <!-- ANFÜHRER / LOBBY OPTIONEN -->
       <div id="leader-options-box" class="mb-6 bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4">
         <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-3 flex items-center gap-2">👑 Anführer-Einstellungen (Für dieses Spiel)</h4>
@@ -176,7 +168,7 @@
               <option value="off" selected>Aus (Jeder gegen Jeden)</option>
               <option value="2">2 Teams (Rot vs Blau)</option>
               <option value="4">4 Teams (Rot, Blau, Grün, Gelb)</option>
-              <option value="5" selected>5 Teams (Rot, Blau, Grün, Gelb, Lila)</option>
+              <option value="5">5 Teams (Rot, Blau, Grün, Gelb, Lila)</option>
             </select>
           </div>
         </div>
@@ -219,25 +211,29 @@
         </div>
       </div>
 
-      <!-- GROSSE, AUFFÄLLIGE FRAGE-BOX MIT SPRACHAUSGABE -->
+      <!-- GROSSE, AUFFÄLLIGE FRAGE-BOX MIT SPRACHAUSGABE & STEUERUNG -->
       <div class="bg-gradient-to-r from-slate-900 via-rose-950/20 to-slate-900 border-2 border-rose-500/70 rounded-2xl p-6 mb-6 flex flex-col md:flex-row items-center gap-6 shadow-2xl shadow-rose-950/30">
         <div id="game-active-avatar-wrap" class="w-24 h-24 rounded-2xl overflow-hidden border-4 border-rose-500 bg-slate-950 flex-shrink-0 shadow-lg">
           <img id="game-active-avatar-img" src="" alt="Avatar" class="w-full h-full object-cover">
         </div>
-        <div class="flex-1 text-center md:text-left">
+        <div class="flex-1 text-center md:text-left w-full">
           <div class="flex flex-wrap items-center justify-center md:justify-between gap-2 mb-2">
             <div class="flex items-center gap-2">
               <span class="px-2.5 py-0.5 bg-rose-500/20 text-rose-300 rounded-md text-[10px] font-black uppercase tracking-widest">FRAGE</span>
               <span class="text-xs text-slate-400">für <span id="game-current-player-name" class="text-amber-400 font-bold">Name</span></span>
             </div>
-            <!-- Sprachausgabe Steuerung -->
-            <div class="flex items-center gap-2">
+            <!-- Sprachausgabe Steuerung (Wiederholen, Ein/Aus, Lautstärke) -->
+            <div class="flex flex-wrap items-center gap-2">
               <button type="button" onclick="repeatCurrentQuestionVoice()" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer" title="Frage noch einmal vorlesen">
                 🔁 Wiederholen
               </button>
               <button type="button" id="voice-toggle-btn" onclick="toggleVoiceSpeech()" class="px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer" title="Automatische Sprachausgabe an/aus">
                 🗣️ Stimme: An
               </button>
+              <div class="flex items-center gap-1 bg-slate-900 px-2 py-1 rounded-xl border border-slate-800">
+                <span class="text-[10px] text-slate-400">🔊 Vol:</span>
+                <input type="range" id="voice-volume-slider" min="0" max="1" step="0.1" value="1" oninput="updateVoiceVolume(this.value)" class="w-16 accent-amber-500 cursor-pointer">
+              </div>
             </div>
           </div>
           <p id="game-question-text" class="text-2xl md:text-3xl font-black text-white leading-snug drop-shadow-md">
@@ -245,7 +241,6 @@
           </p>
         </div>
       </div>
-
       <!-- ANTWORT INPUT / SPRACHREZEPTOR -->
       <div class="space-y-4">
         <div>
@@ -272,9 +267,9 @@
     <!-- SCREEN 3: VOTING-RUNDE -->
     <div id="screen-voting" class="w-full max-w-6xl glass rounded-3xl p-5 md:p-8 shadow-2xl hidden">
       <div class="text-center mb-6">
-        <span class="px-3 py-1 bg-rose-500/20 text-rose-400 rounded-full text-xs font-bold uppercase tracking-wider">Abstimmungs-Runde (2 Min.)</span>
+        <span class="px-3 py-1 bg-rose-500/20 text-rose-400 rounded-full text-xs font-bold uppercase tracking-wider">Abstimmungs-Runde</span>
         <h2 class="text-2xl md:text-4xl font-extrabold mt-2 fun-font text-white">Wer hatte die dümmsten Antworten?</h2>
-        <p class="text-slate-400 text-xs md:text-sm mt-1">Hier sind die Spieler mit ihren Herzen. Klicke auf Antworten zum Ein-/Ausblenden!</p>
+        <p class="text-slate-400 text-xs md:text-sm mt-1">Hier sind die Antworten der Spieler. Gib demjenigen deine Stimme, der die dümmste Antwort hatte!</p>
         <div class="mt-3 flex flex-wrap items-center justify-center gap-3">
           <div class="inline-flex items-center gap-2 bg-slate-900 border border-slate-800 px-4 py-1.5 rounded-full">
             <span class="text-xs text-slate-400">Verbleibende Voting-Zeit:</span>
@@ -295,7 +290,6 @@
         </button>
       </div>
     </div>
-
     <!-- SCREEN 4: ERGEBNIS -->
     <div id="screen-result" class="w-full max-w-6xl glass rounded-3xl p-5 md:p-8 shadow-2xl hidden text-center">
       <span class="px-3 py-1 bg-amber-500/20 text-amber-400 rounded-full text-xs font-bold uppercase tracking-wider">Durchgang beendet – Auswertung</span>
@@ -321,6 +315,7 @@
     </div>
 
   </main>
+
   <!-- ADMIN MODAL -->
   <div id="admin-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
     <div class="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
@@ -331,14 +326,12 @@
 
       <div id="admin-login-box" class="p-8 text-center space-y-4 my-auto">
         <div class="w-16 h-16 bg-amber-500/20 text-amber-400 rounded-2xl mx-auto flex items-center justify-center text-2xl font-bold">🔒</div>
-        <h4 class="text-lg font-bold text-white">Passwort erforderlich</h4>
-        <p class="text-xs text-slate-400 max-w-xs mx-auto">Bitte gib das Admin-Passwort ein, um Zugriff auf die Einstellungen, Fragen und Avatare zu erhalten.</p>
+        <h4 class="text-lg font-bold text-white">Passwort erforderlich ('minati')</h4>
         <div class="max-w-xs mx-auto flex gap-2">
           <input type="password" id="admin-password-input" placeholder="Passwort..." class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-amber-500" onkeydown="if(event.key==='Enter')checkAdminPassword()">
           <button onclick="checkAdminPassword()" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-sm transition cursor-pointer">Login</button>
         </div>
       </div>
-
       <div id="admin-dashboard" class="flex-1 overflow-y-auto p-6 space-y-6 hidden">
         <div class="flex border-b border-slate-800 gap-4">
           <button onclick="switchAdminTab('avatars')" id="tab-btn-avatars" class="pb-3 text-sm font-bold text-amber-400 border-b-2 border-amber-400 transition cursor-pointer">Avatare & Kategorien</button>
@@ -390,17 +383,22 @@
             </div>
             <div>
               <label class="block text-xs text-slate-400 mb-1">Standard Votingzeit (Sekunden)</label>
-              <input type="number" id="admin-votingtime-input" value="120" min="15" max="300" class="w-full bg-slate-900 border border-
-                <!-- JAVASCRIPT LOGIK -->
+              <input type="number" id="admin-votingtime-input" value="120" min="15" max="300" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Standard Leben</label>
+              <input type="number" id="admin-lives-input" value="3" min="1" max="10" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs">
+            </div>
+            <button onclick="saveAdminSettings()" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs transition cursor-pointer">Einstellungen übernehmen</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- JAVASCRIPT LOGIK -->
   <script>
-    // --- DATENBANKEN & GRUNDCONFIG ---
     let defaultAvatars = [
-      { id: 'av1', name: 'Naruto', franchise: 'Naruto', img: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=300' },
-      { id: 'av2', name: 'Sasuke', franchise: 'Naruto', img: 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=300' },
-      { id: 'av3', name: 'Goku', franchise: 'Dragon Ball', img: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=300' },
-      { id: 'av4', name: 'Vegeta', franchise: 'Dragon Ball', img: 'https://images.unsplash.com/photo-1618336753974-aae8e04506aa?w=300' },
-      { id: 'av5', name: 'Ruffy', franchise: 'One Piece', img: 'https://images.unsplash.com/photo-1563089145-599997674d42?w=300' },
-      { id: 'av6', name: 'Zorro', franchise: 'One Piece', img: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=300' }
+      { id: 'av1', name: 'Naruto', franchise: 'Naruto', img: 'data:image/jpeg;base64,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' }
     ];
 
     let defaultQuestions = [
@@ -435,6 +433,7 @@
       votingTimeRemaining: 120,
       gamePaused: false,
       voiceEnabled: true,
+      voiceVolume: 1.0,
       audioActive: true,
       currentAnswers: {},
       votes: {},
@@ -444,7 +443,7 @@
       isHost: true,
       roomId: null
     };
-       // --- INITIALISIERUNG BEIM LADEN ---
+
     window.addEventListener('DOMContentLoaded', () => {
       loadLocalStorageData();
       renderLobbyAvatars();
@@ -466,7 +465,6 @@
       localStorage.setItem('ddf_questions', JSON.stringify(defaultQuestions));
     }
 
-    // --- NAVIGATION & SCREENS ---
     function switchScreen(screenId) {
       ['screen-lobby', 'screen-game', 'screen-voting', 'screen-result'].forEach(id => {
         document.getElementById(id).classList.add('hidden');
@@ -475,7 +473,7 @@
       state.screen = screenId;
     }
 
-    // --- SPRACHAUSGABE & SYNTHESIS ---
+    // --- SPRACHAUSGABE MIT LAUTSTÄRKE & WIEDERHOLEN ---
     function speakText(text, callback) {
       if (!state.voiceEnabled || !('speechSynthesis' in window)) {
         if (callback) callback();
@@ -485,7 +483,8 @@
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'de-DE';
       utterance.rate = 1.0;
-      utterance.pitch = 0.9; // Tiefe, angenehme männliche Stimme
+      utterance.pitch = 0.9;
+      utterance.volume = state.voiceVolume; // Lautstärke aktiv steuerbar
 
       const voices = window.speechSynthesis.getVoices();
       const deVoice = voices.find(v => v.lang.startsWith('de') && (v.name.includes('Male') || v.name.includes('Markus') || v.name.includes('Stefan') || v.name.includes('Google') || v.name.includes('Microsoft')));
@@ -510,13 +509,16 @@
       }
     }
 
+    function updateVoiceVolume(val) {
+      state.voiceVolume = parseFloat(val);
+    }
+
     function repeatCurrentQuestionVoice() {
       const qText = document.getElementById('game-question-text').textContent;
       const pName = state.players[state.activePlayerTurnIndex]?.name || 'Spieler';
       speakText(`${pName}, deine Frage lautet: ${qText}`);
     }
-
-    // --- SPRACHEINGABE (SPEECH RECOGNITION) ---
+    // --- SPRACHEINGABE & SPIELSTEUERUNG ---
     let recognition = null;
     function toggleSpeechRecognition() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -547,7 +549,6 @@
         micBtn.classList.remove('bg-rose-600', 'animate-pulse');
         recognition = null;
 
-        // AUTOMATISCHES ABSENDEN NACH 1 SEKUNDE SPRACHPAUSE
         clearTimeout(speechTimeout);
         speechTimeout = setTimeout(() => {
           submitPlayerAnswer();
@@ -566,7 +567,7 @@
 
       recognition.start();
     }
-      // --- SPIEL- & LOBBY-STEUERUNG ---
+
     function renderLobbyAvatars() {
       const container = document.getElementById('lobby-avatars-container');
       container.innerHTML = '';
@@ -721,7 +722,6 @@
       state.players.forEach(p => p.lives = state.startLives);
     }
 
-    // --- SPIELSTART & ABLAUF ---
     function startMatch() {
       state.currentRound = 1;
       state.currentQuestionIndex = 0;
@@ -749,7 +749,6 @@
     }
 
     function loadNextQuestionForActivePlayer() {
-      // Überspringe Spieler, die aussetzen müssen
       while (state.players[state.activePlayerTurnIndex]?.skippedNext) {
         state.players[state.activePlayerTurnIndex].skippedNext = false;
         state.activePlayerTurnIndex = (state.activePlayerTurnIndex + 1) % state.players.length;
@@ -770,7 +769,6 @@
         speakText(`${p.name}, deine Frage lautet: ${q.text}`);
       }
 
-      // Wenn Bot am Zug ist, automatisch antworten
       if (p.isBot) {
         setTimeout(() => {
           const botAnswers = ['Weiß nicht', '42', 'Keine Ahnung', 'Batman', 'Kartoffel'];
@@ -794,7 +792,7 @@
           document.getElementById('game-timer-display').textContent = state.questionTimeRemaining;
           if (state.questionTimeRemaining <= 0) {
             clearInterval(state.questionTimerInterval);
-            submitPlayerAnswer(); // Automatisch weiter bei Zeitablauf
+            submitPlayerAnswer();
           }
         }
       }, 1000);
@@ -809,7 +807,6 @@
       state.currentQuestionIndex++;
       state.activePlayerTurnIndex = (state.activePlayerTurnIndex + 1) % state.players.length;
 
-      // Prüfen ob alle dran waren oder Zeit rum
       if (state.matchTimeRemaining <= 0) {
         startVotingPhase();
       } else {
@@ -822,7 +819,6 @@
       document.getElementById('pause-btn').textContent = state.gamePaused ? '▶️ Fortsetzen' : '⏸️ Pause';
     }
 
-    // --- VOTING PHASE ---
     function startVotingPhase() {
       clearInterval(state.matchTimerInterval);
       clearInterval(state.questionTimerInterval);
@@ -900,7 +896,6 @@
       clearInterval(state.votingTimerInterval);
       switchScreen('result');
 
-      // Finde Spieler mit den meisten Stimmen
       let maxVotes = -1;
       let loserIds = [];
       Object.keys(state.votes).forEach(pid => {
@@ -963,7 +958,6 @@
       startMatch();
     }
 
-    // --- ADMIN & PEERJS ---
     function openAdminModal() { document.getElementById('admin-modal').classList.remove('hidden'); }
     function closeAdminModal() { document.getElementById('admin-modal').classList.add('hidden'); }
     
@@ -1077,7 +1071,7 @@
     }
 
     function copyInviteLink() {
-      const roomId = state.roomId || Math.random().toString(36.substring(2, 8));
+      const roomId = state.roomId || Math.random().toString(36).substring(2, 8);
       const link = window.location.origin + window.location.pathname + '?room=' + roomId;
       navigator.clipboard.writeText(link);
       alert('Einladungs-Link in die Zwischenablage kopiert!\n' + link);
@@ -1091,12 +1085,12 @@
       try {
         state.peer = new Peer();
         state.peer.on('open', (id) => {
-          console.log('Peer connected with ID:', id);
+          document.getElementById('header-status-text').textContent = 'Bereit (Raum aktiv)';
         });
       } catch(e) {
-        console.log('PeerJS offline mode.');
+        document.getElementById('header-status-text').textContent = 'Offline-Modus aktiv';
       }
     }
   </script>
 </body>
-</html>        
+</html>
