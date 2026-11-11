@@ -47,7 +47,7 @@
         <button onclick="restartMatchSameChars()" id="header-restart-btn" class="px-3.5 py-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-300 font-bold rounded-xl text-xs md:text-sm flex items-center gap-1.5 shadow-sm transition cursor-pointer" title="Neustart">🔄 Neustart</button>
         <button onclick="returnToLobby()" id="header-lobby-btn" class="px-3.5 py-2 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/50 text-indigo-300 font-bold rounded-xl text-xs md:text-sm flex items-center gap-1.5 shadow-sm transition cursor-pointer" title="Zurück zur Lobby">🏠 Lobby</button>
       </div>
-      <button onclick="toggleAudio()" id="audio-btn" class="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700/60 transition shadow-sm cursor-pointer" title="Sound an/aus">🔊</button>
+      <button onclick="toggleAudio()" id="audio-btn" style="display:none" class="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700/60 transition shadow-sm cursor-pointer" title="Sound an/aus">🔊</button>
       <button onclick="openAdminModal()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-amber-500/40 text-amber-400 font-semibold rounded-xl text-xs md:text-sm flex items-center gap-2 shadow-sm transition hover:border-amber-500 cursor-pointer">
         <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>Admin
       </button>
@@ -136,8 +136,8 @@
               <option value="7">7 Sekunden</option>
               <option value="10">10 Sekunden</option>
               <option value="12">12 Sekunden</option>
-              <option value="15" selected>15 Sekunden</option>
-              <option value="20">20 Sekunden</option>
+              <option value="15">15 Sekunden</option>
+              <option value="20" selected>20 Sekunden</option>
               <option value="30">30 Sekunden</option>
             </select>
           </div>
@@ -165,10 +165,10 @@
 
       <div id="room-panel" class="mb-6 p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 space-y-3">
         <h3 class="font-bold text-indigo-300">🌐 Online-Multiplayer</h3>
-        <p id="connection-status" class="text-xs text-slate-300">Firebase einrichten, um online zu spielen.</p>
+        <p id="connection-status" class="text-xs text-slate-300">Erstelle einen Raum und teile den Einladungslink.</p>
         <div class="flex flex-wrap gap-2"><button onclick="createOnlineRoom()" class="px-4 py-2 rounded-xl bg-emerald-600 font-bold text-sm">Raum erstellen</button><input id="join-room-code" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 w-36" placeholder="Raumcode" maxlength="8"><button onclick="joinOnlineRoom()" class="px-4 py-2 rounded-xl bg-indigo-600 font-bold text-sm">Beitreten</button></div>
-        <p id="room-code-label" class="font-mono text-amber-300 text-sm"></p>
-        <p class="text-xs text-slate-400">Jeder Freund öffnet den Einladungslink auf seinem eigenen Gerät. Ohne Firebase-Konfiguration ist nur der lokale Testmodus möglich.</p>
+        <p id="online-room-display" class="text-xs text-emerald-300"></p><p id="room-code-label" class="font-mono text-amber-300 text-sm"></p>
+        <p class="text-xs text-slate-400">Jeder Freund öffnet den Einladungslink auf seinem eigenen Gerät. Einladungslink öffnen genügt – kein Code nötig. Der Host muss online bleiben.</p>
       </div>
       <div id="team-self-box" class="mb-5 hidden"><label class="text-sm text-slate-300 font-bold">Mein Team wählen</label><select id="my-team-select" onchange="chooseMyTeam(this.value)" class="mt-2 w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white"></select></div>
       <!-- ACTION BUTTONS -->
@@ -203,7 +203,7 @@
           <!-- Antwort-Timer pro Frage -->
           <div class="px-3.5 py-2 bg-rose-500/20 border border-rose-500/40 rounded-2xl flex items-center gap-1.5" title="Antwortzeit für diese Frage">
             <span class="text-xs text-rose-300 font-bold uppercase">Frage:</span>
-            <span class="text-rose-400 font-mono font-extrabold text-base md:text-lg" id="game-timer-display">15</span>
+            <span class="text-rose-400 font-mono font-extrabold text-base md:text-lg" id="game-timer-display">20</span>
             <span class="text-xs text-rose-300 font-medium uppercase">s</span>
           </div>
         </div>
@@ -250,7 +250,7 @@
         <p class="text-slate-400 text-xs md:text-sm mt-1">Wähle einen Spieler. Antworten kannst du bei Bedarf aufklappen.</p>
         <div class="mt-3 inline-flex items-center gap-2 bg-slate-900 border border-slate-800 px-4 py-1.5 rounded-full">
           <span class="text-xs text-slate-400">Verbleibende Voting-Zeit:</span>
-          <span id="voting-timer-display" class="font-mono font-bold text-amber-400 text-lg">02:00</span>
+          <span id="voting-timer-display" class="font-mono font-bold text-amber-400 text-lg">01:00</span>
         </div>
       </div>
 
@@ -372,23 +372,20 @@
             </div>
             <div>
               <label class="block text-xs text-slate-400 mb-1">Standard Antwortzeit pro Frage (Sekunden)</label>
-              <input type="number" id="admin-timer-input" value="15" min="3" max="60" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs">
+              <input type="number" id="admin-timer-input" value="20" min="3" max="60" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs">
             </div>
             <div>
               <label class="block text-xs text-slate-400 mb-1">Standard Leben</label>
               <input type="number" id="admin-lives-input" value="3" min="1" max="10" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs">
             </div>
-            <div><label class="block text-xs text-slate-400 mb-1">Votingzeit (Sekunden)</label><input type="number" id="admin-voting-input" value="120" min="15" max="600" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs"></div>
+            <div><label class="block text-xs text-slate-400 mb-1">Votingzeit (Sekunden)</label><input type="number" id="admin-voting-input" value="60" min="15" max="600" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs"></div>
             <button onclick="saveAdminSettings()" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs transition cursor-pointer">Einstellungen übernehmen</button>
           </div>
         </div>
       </div>
     </div>
   </div>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
-  <script src="firebase-config.js"></script>
+
   
   <!-- JAVASCRIPT LOGIK -->
   <script>
@@ -1515,8 +1512,8 @@
       ],
       activeEditingPlayerIndex: 0,
       matchTimeMinutes: 2,
-      timerSeconds: 15,
-      votingSeconds: 120,
+      timerSeconds: 20,
+      votingSeconds: 60,
       startLives: 3,
       teamsMode: 'off',
       currentRound: 1,
@@ -1526,12 +1523,12 @@
       questionTimerInterval: null,
       votingTimerInterval: null,
       matchTimeRemaining: 120,
-      questionTimeRemaining: 15,
-      votingTimeRemaining: 120,
+      questionTimeRemaining: 20,
+      votingTimeRemaining: 60,
       gamePaused: false,
-      voiceEnabled: true,
-      voiceVolume: 1.0,
-      audioActive: true,
+      voiceEnabled: false,
+      voiceVolume: 0.35,
+      audioActive: false,
       currentAnswers: {},
       votes: {},
       hostSolutionsVisible: false,
@@ -1541,6 +1538,8 @@
     };
 
     window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById("audio-btn").textContent = "🔇";
+      if (new URLSearchParams(location.search).has("room")) setTimeout(() => joinOnlineRoom(new URLSearchParams(location.search).get("room")), 300);
       loadLocalStorageData();
       renderLobbyAvatars();
       renderLobbyPlayers();
@@ -1550,7 +1549,7 @@
 
     function loadLocalStorageData() {
       const savedAvs = localStorage.getItem('ddf_avatars');
-      if (savedAvs) { try { defaultAvatars = JSON.parse(savedAvs); } catch(e){} }
+      if (savedAvs) { try { const custom = JSON.parse(savedAvs); if (Array.isArray(custom)) { const originalIds = new Set(defaultAvatars.map(a => a.id)); defaultAvatars.push(...custom.filter(a => !originalIds.has(a.id))); } } catch(e){} }
       const savedQs = localStorage.getItem('ddf_questions');
       if (savedQs) { try { defaultQuestions = JSON.parse(savedQs); } catch(e){} }
     }
@@ -1566,11 +1565,13 @@
     }
 
     // --- SPRACHAUSGABE & MIKROFON ---
-    function speakText(text, callback) {
+    function speakText(text, callback) { if (callback) callback(); return;
       if (!state.voiceEnabled || !('speechSynthesis' in window)) { if (callback) callback(); return; }
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'de-DE'; utterance.rate = 1.0; utterance.pitch = 0.9; utterance.volume = state.voiceVolume;
+      utterance.lang = 'de-DE'; utterance.rate = 0.94; utterance.pitch = 1; utterance.volume = state.voiceVolume;
+      const germanVoice = speechSynthesis.getVoices().find(v => v.lang.startsWith("de") && /natural|neural|google|microsoft/i.test(v.name)) || speechSynthesis.getVoices().find(v => v.lang.startsWith("de"));
+      if (germanVoice) utterance.voice = germanVoice;
       window.speechSynthesis.speak(utterance);
       utterance.onend = () => { if (callback) callback(); };
       utterance.onerror = () => { if (callback) callback(); };
@@ -1580,6 +1581,7 @@
       state.audioActive = !state.audioActive;
       state.voiceEnabled = state.audioActive;
       document.getElementById('audio-btn').textContent = state.audioActive ? '🔊' : '🔇';
+      if (!state.audioActive && window.speechSynthesis) speechSynthesis.cancel();
     }
 
     let recognition = null;
@@ -1618,10 +1620,11 @@
             ${isTaken ? '<div class="absolute inset-0 bg-slate-950/60 flex items-center justify-center"><span class="text-[9px] font-bold text-slate-400">Vergeben</span></div>' : ''}`;
           if (!isTaken) {
             card.onclick = () => {
+              if (state.onlineMode && !state.isHost && state.players[state.activeEditingPlayerIndex]?.id !== myPlayerId) return;
               state.players[state.activeEditingPlayerIndex].avatarIndex = av.originalIndex;
               state.players[state.activeEditingPlayerIndex].name = av.name;
               document.getElementById('player-name-input').value = av.name;
-              renderLobbyAvatars(); renderLobbyPlayers(); updatePreviewCard();
+              renderLobbyAvatars(); renderLobbyPlayers(); updatePreviewCard(); sendMyProfile();
             };
           }
           grid.appendChild(card);
@@ -1651,37 +1654,54 @@
         const card = document.createElement('div');
         card.className = `flex items-center gap-2 p-2 rounded-xl border cursor-pointer transition ${idx === state.activeEditingPlayerIndex ? 'bg-amber-500/20 border-amber-500/50' : 'bg-slate-900 border-slate-700 hover:border-amber-500/30'}`;
         card.innerHTML = `<img src="${av.img}" class="w-8 h-8 rounded-lg object-cover"><div class="text-left"><p class="text-xs font-bold text-white leading-tight">${p.name}</p><p class="text-[9px] text-slate-400">${p.isBot ? 'Bot' : 'Spieler'}</p></div>`;
-        card.onclick = () => { state.activeEditingPlayerIndex = idx; updatePreviewCard(); renderLobbyPlayers(); };
+        card.onclick = () => { if (state.onlineMode && !state.isHost && p.id !== myPlayerId) return; state.activeEditingPlayerIndex = idx; updatePreviewCard(); renderLobbyPlayers(); };
         grid.appendChild(card);
       });
     }
 
-    function addHumanPlayer() {
+    function addHumanPlayer() { if(state.onlineMode)return alert("Online-Spieler treten über den Einladungslink bei.");
       const idx = defaultAvatars.findIndex((_, i) => !state.players.some(p => p.avatarIndex === i));
       if (idx === -1) { alert('Alle Charaktere vergeben!'); return; }
       state.players.push({ id: 'p' + (state.players.length + 1), name: defaultAvatars[idx].name, avatarIndex: idx, lives: state.startLives, maxLives: state.startLives, isBot: false, team: null, skippedNext: false });
       state.activeEditingPlayerIndex = state.players.length - 1; renderLobbyAvatars(); renderLobbyPlayers();
     }
-    function addBotPlayer() {
+    function addBotPlayer() { if(state.onlineMode&&!state.isHost)return;
       const idx = defaultAvatars.findIndex((_, i) => !state.players.some(p => p.avatarIndex === i));
       if (idx === -1) { alert('Alle Charaktere vergeben!'); return; }
       state.players.push({ id: 'bot' + (state.players.length + 1), name: 'Bot ' + defaultAvatars[idx].name, avatarIndex: idx, lives: state.startLives, maxLives: state.startLives, isBot: true, team: null, skippedNext: false });
       renderLobbyAvatars(); renderLobbyPlayers();
     }
-    function updateActivePlayerName(val) { if (state.players[state.activeEditingPlayerIndex]) state.players[state.activeEditingPlayerIndex].name = val; renderLobbyPlayers(); }
-    function resetPlayerName() { const p = state.players[state.activeEditingPlayerIndex]; p.name = defaultAvatars[p.avatarIndex].name; document.getElementById('player-name-input').value = p.name; renderLobbyPlayers(); }
+    function updateActivePlayerName(val) { if (state.onlineMode && !state.isHost && state.players[state.activeEditingPlayerIndex]?.id !== myPlayerId) return; if (state.players[state.activeEditingPlayerIndex]) state.players[state.activeEditingPlayerIndex].name = val; renderLobbyPlayers(); sendMyProfile(); }
+    function resetPlayerName() { const p = state.players[state.activeEditingPlayerIndex]; if (!p || (state.onlineMode && !state.isHost && p.id !== myPlayerId)) return; p.name = defaultAvatars[p.avatarIndex].name; document.getElementById('player-name-input').value = p.name; renderLobbyPlayers(); sendMyProfile(); }
     function updateLeaderSettings() {
       state.matchTimeMinutes = parseInt(document.getElementById('leader-matchtime-select').value) || 2;
       state.timerSeconds = parseInt(document.getElementById('leader-timer-select').value) || 15;
       state.startLives = parseInt(document.getElementById('leader-lives-select').value) || 3;
       state.teamsMode = document.getElementById('leader-teams-select').value;
+      updateTeamSelector();
       state.players.forEach(p => { p.lives = state.startLives; p.maxLives = state.startLives; });
+      broadcastState();
     }
 
+    function updateTeamSelector() {
+      const box=document.getElementById('team-self-box'),select=document.getElementById('my-team-select');
+      box.classList.toggle('hidden',state.teamsMode==='off');
+      if(state.teamsMode==='off')return;
+      const colors=['rot','blau','gruen','gelb','lila'].slice(0,Number(state.teamsMode));
+      const p=state.players[state.activeEditingPlayerIndex];
+      select.innerHTML='<option value="">Team wählen</option>'+colors.map(c=>`<option value="${c}">${c}</option>`).join('');
+      select.value=p?.team||'';
+    }
+    function chooseMyTeam(team) {
+      const p=state.players[state.activeEditingPlayerIndex];
+      if(!p || (state.onlineMode&&!state.isHost&&p.id!==myPlayerId))return;
+      p.team=team;updatePreviewCard();sendMyProfile();
+    }
     // --- SPIEL LOGIK ---
     function startMatch() {
+      if (state.onlineMode && !state.isHost) return;
       state.currentRound = 1; state.currentQuestionIndex = 0; state.activePlayerTurnIndex = 0;
-      state.matchTimeRemaining = state.matchTimeMinutes * 60; switchScreen('game'); startMatchTimer(); loadNextQuestionForActivePlayer();
+      state.matchTimeRemaining = state.matchTimeMinutes * 60; state.currentAnswers = {}; state.votes = {}; state.ballots = {}; switchScreen('game'); startMatchTimer(); loadNextQuestionForActivePlayer(); broadcastState();
     }
     function startMatchTimer() {
       clearInterval(state.matchTimerInterval);
@@ -1690,6 +1710,7 @@
           state.matchTimeRemaining--;
           document.getElementById('match-total-timer-display').textContent = `${Math.floor(state.matchTimeRemaining / 60).toString().padStart(2,'0')}:${(state.matchTimeRemaining % 60).toString().padStart(2,'0')}`;
           if (state.matchTimeRemaining <= 0) { clearInterval(state.matchTimerInterval); startVotingPhase(); }
+          else if (state.matchTimeRemaining % 2 === 0) broadcastState();
         }
       }, 1000);
     }
@@ -1705,7 +1726,8 @@
       document.getElementById('game-active-avatar-img').src = av.img; document.getElementById('game-round-badge').textContent = `Durchgang ${state.currentRound} - Frage ${state.currentQuestionIndex + 1}`;
       const q = defaultQuestions[state.currentQuestionIndex % defaultQuestions.length];
       document.getElementById('game-question-text').textContent = q.text; document.getElementById('player-answer-input').value = '';
-      if (state.voiceEnabled) speakText(`${p.name}, deine Frage lautet: ${q.text}`);
+      // Vorlesestimme entfernt; Mikrofoneingabe bleibt.
+      broadcastState();
       if (p.isBot) { setTimeout(() => { document.getElementById('player-answer-input').value = 'Mhmm...'; submitPlayerAnswer(); }, 2500); }
       else { startQuestionTimer(); }
     }
@@ -1713,43 +1735,69 @@
       clearInterval(state.questionTimerInterval); state.questionTimeRemaining = state.timerSeconds; document.getElementById('game-timer-display').textContent = state.questionTimeRemaining;
       state.questionTimerInterval = setInterval(() => {
         if (!state.gamePaused) {
-          state.questionTimeRemaining--; document.getElementById('game-timer-display').textContent = state.questionTimeRemaining;
+          state.questionTimeRemaining--; document.getElementById('game-timer-display').textContent = state.questionTimeRemaining; if(state.questionTimeRemaining%2===0)broadcastState();
           if (state.questionTimeRemaining <= 0) { clearInterval(state.questionTimerInterval); submitPlayerAnswer(); }
         }
       }, 1000);
     }
     function submitPlayerAnswer() {
+      if (state.onlineMode && !state.isHost) {
+        if (state.players[state.activePlayerTurnIndex]?.id !== myPlayerId) return;
+        sendHost({type:"ANSWER", answer:document.getElementById("player-answer-input").value.trim() || "(Keine Antwort)"});
+        document.getElementById("player-answer-input").disabled = true; return;
+      }
       clearInterval(state.questionTimerInterval);
       const val = document.getElementById('player-answer-input').value.trim() || '(Keine Antwort)';
       state.currentAnswers[state.players[state.activePlayerTurnIndex].id] = { questionIndex: state.currentQuestionIndex, answer: val };
       state.currentQuestionIndex++; state.activePlayerTurnIndex = (state.activePlayerTurnIndex + 1) % state.players.length;
       if (state.matchTimeRemaining <= 0) startVotingPhase(); else loadNextQuestionForActivePlayer();
+      broadcastState();
     }
-    function togglePauseGame() { state.gamePaused = !state.gamePaused; document.getElementById('pause-btn').textContent = state.gamePaused ? '▶️ Fortsetzen' : '⏸️ Pause'; }
+    function togglePauseGame() { if (state.onlineMode && !state.isHost) return; state.gamePaused = !state.gamePaused; document.getElementById('pause-btn').textContent = state.gamePaused ? '▶️ Fortsetzen' : '⏸️ Pause'; broadcastState(); }
 
     // --- VOTING LOGIK ---
+    function esc(v) { return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
     function startVotingPhase() {
+      if (state.onlineMode && !state.isHost) return;
       clearInterval(state.matchTimerInterval); clearInterval(state.questionTimerInterval); switchScreen('voting');
-      const grid = document.getElementById('voting-answers-grid'); grid.innerHTML = ''; state.votes = {};
+      state.votes = {}; state.ballots = {};
+      state.players.forEach(p => state.votes[p.id] = 0);
+      renderVotingCards(); startVotingTimer(); broadcastState();
+    }
+    function renderVotingCards() {
+      const grid = document.getElementById('voting-answers-grid'); grid.innerHTML = '';
       state.players.forEach(p => {
-        state.votes[p.id] = 0; const ansObj = state.currentAnswers[p.id] || { answer: '(Nicht teilgenommen)' };
-        const q = defaultQuestions[ansObj.questionIndex % defaultQuestions.length] || defaultQuestions[0]; const av = defaultAvatars[p.avatarIndex];
+        const ansObj = state.currentAnswers[p.id] || {answer:'(Nicht teilgenommen)', questionIndex:0};
+        const q = defaultQuestions[(ansObj.questionIndex || 0) % defaultQuestions.length] || {text:'',answer:''};
+        const av = defaultAvatars[p.avatarIndex] || defaultAvatars[0];
         const card = document.createElement('div'); card.className = 'glass rounded-2xl p-4 border border-slate-800 flex flex-col justify-between';
-        card.innerHTML = `<div><div class="flex items-center gap-3 mb-3"><img src="${av.img}" class="w-10 h-10 rounded-xl object-cover border border-slate-700"><div><h4 class="text-xs font-bold text-white">${p.name}</h4><span class="text-[10px] text-slate-400 truncate block max-w-[200px]">Frage: "${q.text}"</span></div></div><div class="bg-slate-950 p-3 rounded-xl border border-slate-800 mb-3"><p class="text-sm font-semibold text-rose-400">"${ansObj.answer}"</p></div></div><div class="flex items-center justify-between pt-2 border-t border-slate-800"><span class="text-xs font-bold text-slate-300">Stimmen: <span id="vote-count-${p.id}" class="text-amber-400">0</span></span><button onclick="addVoteForPlayer('${p.id}')" class="px-3 py-1.5 bg-rose-600/30 text-rose-300 border border-rose-500/40 rounded-xl text-xs font-bold transition hover:bg-rose-600/50 cursor-pointer">👎 Stimme</button></div>`;
+        card.innerHTML = `<div><div class="flex items-center gap-3 mb-3"><img src="${av.img}" class="w-10 h-10 rounded-xl object-cover"><h4 class="font-bold">${esc(p.name)} ${'❤️'.repeat(Math.max(0,p.lives))}</h4></div><details class="mb-3 rounded-xl bg-slate-950 p-3"><summary class="cursor-pointer text-sm text-amber-300">Frage und Antwort anzeigen</summary><p class="mt-2 text-sm">${esc(q.text)}</p><p class="mt-2 text-rose-300 font-bold">${esc(ansObj.answer)}</p></details>${state.isHost ? `<details class="mb-3 rounded-xl bg-indigo-950/60 p-3"><summary class="cursor-pointer text-xs text-indigo-300">👑 Richtige Antwort (nur Anführer)</summary><p class="mt-2 text-sm">${esc(q.answer)}</p></details>` : ''}</div><div class="flex justify-between items-center"><span class="text-xs">Stimmen: <b id="vote-count-${esc(p.id)}">${state.votes[p.id]||0}</b></span><button onclick="addVoteForPlayer('${esc(p.id)}')" class="px-3 py-2 rounded-xl bg-rose-600/30 text-rose-300 text-xs font-bold">👎 Stimme</button></div>`;
         grid.appendChild(card);
       });
-      startVotingTimer();
     }
-    function startVotingTimer() {
+    function startVotingTimer() { if(state.onlineMode&&!state.isHost)return;
       clearInterval(state.votingTimerInterval); state.votingTimeRemaining = state.votingSeconds; document.getElementById('voting-timer-display').textContent = `${Math.floor(state.votingTimeRemaining/60).toString().padStart(2,'0')}:${(state.votingTimeRemaining%60).toString().padStart(2,'0')}`;
       state.votingTimerInterval = setInterval(() => { 
         state.votingTimeRemaining--; 
         document.getElementById('voting-timer-display').textContent = `${Math.floor(state.votingTimeRemaining/60).toString().padStart(2,'0')}:${(state.votingTimeRemaining%60).toString().padStart(2,'0')}`; 
-        if (state.votingTimeRemaining <= 0) forceEndVoting(); 
+        if (state.votingTimeRemaining <= 0) forceEndVoting();
+        else if (state.votingTimeRemaining % 2 === 0) broadcastState(); 
       }, 1000);
     }
-    function addVoteForPlayer(pid) { state.votes[pid] = (state.votes[pid] || 0) + 1; document.getElementById(`vote-count-${pid}`).textContent = state.votes[pid]; }
+    function addVoteForPlayer(pid) {
+      if (state.onlineMode && !state.isHost) { sendHost({type:'VOTE',target:pid}); return; }
+      recordVote(myPlayerId || 'host', pid);
+    }
+    function recordVote(voter, target) {
+      if (!state.players.some(p=>p.id===target) || state.ballots?.[voter] || voter===target) return;
+      state.ballots ||= {}; state.ballots[voter] = target;
+      state.votes[target] = (state.votes[target]||0)+1;
+      const count = document.getElementById('vote-count-'+target); if (count) count.textContent = state.votes[target];
+      broadcastState();
+      if (state.onlineMode && Object.keys(state.ballots).length >= state.players.filter(p=>!p.isBot).length) forceEndVoting();
+    }
     function forceEndVoting() {
+      if (state.onlineMode && !state.isHost) return;
       clearInterval(state.votingTimerInterval); switchScreen('result');
       let maxVotes = -1, loserIds = [];
       Object.keys(state.votes).forEach(pid => { if (state.votes[pid] > maxVotes) { maxVotes = state.votes[pid]; loserIds = [pid]; } else if (state.votes[pid] === maxVotes) { loserIds.push(pid); } });
@@ -1761,108 +1809,117 @@
         summaryBox.appendChild(row);
       });
       document.getElementById('result-headline').textContent = maxVotes > 0 ? 'Das Urteil ist gefallen!' : 'Niemand hat Stimmen erhalten!';
+      broadcastState();
     }
-    function toggleSkip(pid, checked) { const p = state.players.find(x => x.id === pid); if(p) p.skippedNext = checked; }
-    function nextRoundOrGame() { state.currentRound++; state.currentAnswers = {}; state.votes = {}; startMatch(); }
-    function returnToLobby() { clearInterval(state.matchTimerInterval); clearInterval(state.questionTimerInterval); clearInterval(state.votingTimerInterval); switchScreen('lobby'); }
-    function restartMatchSameChars() { state.players.forEach(p => { p.lives = state.startLives; p.skippedNext = false; }); state.currentRound = 1; startMatch(); }
-    // --- ECHTER ONLINE-MULTIPLAYER (PEERJS OHNE FIREBASE) ---
-    let peer = null;
-    let conn = null;
-    let isHostOnline = false;
-
+    function toggleSkip(pid, checked) { if (state.onlineMode && !state.isHost) return; const p = state.players.find(x => x.id === pid); if(p) p.skippedNext = checked; broadcastState(); }
+    function nextRoundOrGame() { if (state.onlineMode && !state.isHost) return; state.currentRound++; state.currentAnswers = {}; state.votes = {}; startMatch(); }
+    function returnToLobby() { if (state.onlineMode && !state.isHost) return; clearInterval(state.matchTimerInterval); clearInterval(state.questionTimerInterval); clearInterval(state.votingTimerInterval); switchScreen('lobby'); broadcastState(); }
+    function restartMatchSameChars() { if (state.onlineMode && !state.isHost) return; state.players.forEach(p => { p.lives = state.startLives; p.skippedNext = false; }); state.currentRound = 1; startMatch(); }
+    // --- PEERJS: Host verwaltet Spielzustand, Einladungslink tritt automatisch bei ---
+    let peer = null, conn = null, connections = new Map(), myPlayerId = 'p1', currentScreen = 'lobby';
+    const roomStatus = msg => { document.getElementById('connection-status').textContent = msg; };
+    function roomLink() { const u = new URL(location.href); u.searchParams.set('room',state.roomId); return u.toString(); }
     function createOnlineRoom() {
-      // Zufälligen 4-stelligen Raumcode generieren
-      const roomId = Math.floor(1000 + Math.random() * 9000).toString();
-      state.roomId = roomId;
-      state.isHost = true;
-      isHostOnline = true;
-
-      // PeerJS initialisieren (nutzt einen öffentlichen kostenlosen Server)
-      peer = new Peer('ddf-' + roomId);
-
-      peer.on('open', (id) => {
-        alert(`Dein Online-Raum wurde erstellt!\nRaumcode: ${roomId}\nGib diesen Code deiner Frau, damit sie beitreten kann.`);
-        document.getElementById('online-room-display').textContent = `Raum-ID: ${roomId} (Warte auf Mitspieler...)`;
+      if (!window.Peer) return alert('PeerJS konnte nicht geladen werden. Bitte Internetverbindung prüfen.');
+      if (peer) peer.destroy(); connections.clear();
+      state.roomId = Math.random().toString(36).slice(2,10); state.isHost = true; state.onlineMode = true; myPlayerId = 'p1';
+      peer = new Peer('ddf-'+state.roomId);
+      roomStatus('Raum wird erstellt ...');
+      peer.on('open', () => { roomStatus('Raum bereit. Kopiere den Einladungslink!'); document.getElementById('room-code-label').textContent = roomLink(); });
+      peer.on('connection', c => {
+        connections.set(c.peer,c);
+        c.on('open',()=>{ const used = new Set(state.players.map(p=>p.avatarIndex)); const idx = defaultAvatars.findIndex((a,i)=>!used.has(i));
+          if(idx<0) {c.send({type:'ERROR',message:'Alle Charaktere vergeben'});c.close();return;}
+          const id = 'guest-'+c.peer.replace(/[^a-z0-9-]/gi,'').slice(-24);
+          c.playerId=id;
+          state.players.push({id,name:defaultAvatars[idx].name,avatarIndex:idx,lives:state.startLives,maxLives:state.startLives,isBot:false,team:null,skippedNext:false});
+          c.send({type:'WELCOME',playerId:id}); renderLobbyPlayers();renderLobbyAvatars();broadcastState();
+          roomStatus(state.players.length+' Spieler in der Lobby');
+        });
+        c.on('data',data=>{
+          if(!data || !c.playerId) return;
+          const player=state.players.find(p=>p.id===c.playerId);
+          if(!player)return;
+          if(data.type==='PROFILE' && currentScreen==='lobby') {
+            const idx=Number(data.avatarIndex);
+            if(Number.isInteger(idx) && defaultAvatars[idx] && !state.players.some(p=>p.id!==player.id&&p.avatarIndex===idx))player.avatarIndex=idx;
+            player.name=String(data.name||player.name).slice(0,32);player.team=data.team||player.team;
+            renderLobbyPlayers();renderLobbyAvatars();broadcastState();
+          } else if(data.type==='ANSWER' && currentScreen==='game' && state.players[state.activePlayerTurnIndex]?.id===player.id) {
+            document.getElementById('player-answer-input').value=String(data.answer||'').slice(0,500);submitPlayerAnswer();
+          } else if(data.type==='VOTE' && currentScreen==='voting') recordVote(player.id,data.target);
+        });
+        c.on('close',()=>{connections.delete(c.peer);roomStatus('Ein Mitspieler hat die Verbindung getrennt.');});
+        c.on('error',()=>connections.delete(c.peer));
       });
-
-      peer.on('connection', (incomingConn) => {
-        conn = incomingConn;
-        setupConnectionEvents();
-        alert('Ein Mitspieler ist dem Raum beigetreten!');
-        document.getElementById('online-room-display').textContent = `Raum-ID: ${roomId} (Verbunden!)`;
-        
-        // Aktuellen Spielzustand an den Mitspieler senden
-        setTimeout(() => sendStateToPeer(), 1000);
-      });
-
-      peer.on('error', (err) => {
-        alert('Fehler beim Erstellen des Raums: ' + err.type);
-      });
+      peer.on('error',e=>roomStatus('Verbindungsfehler: '+e.type));
     }
-
-    function joinOnlineRoom() {
-      const roomId = prompt('Bitte gib den 4-stelligen Raumcode des Hosts ein:');
-      if (!roomId) return;
-      
-      state.roomId = roomId.trim();
-      state.isHost = false;
-      isHostOnline = false;
-
-      peer = new Peer();
-
-      peer.on('open', (id) => {
-        conn = peer.connect('ddf-' + state.roomId);
-        setupConnectionEvents();
+    function joinOnlineRoom(code) {
+      const room = (code || document.getElementById('join-room-code').value || new URLSearchParams(location.search).get('room') || '').trim();
+      if(!room) return alert('Bitte öffne den Einladungslink des Anführers.');
+      if(!window.Peer)return alert('PeerJS konnte nicht geladen werden.');
+      state.roomId=room;state.onlineMode=true;state.isHost=false;
+      if(peer)peer.destroy();peer=new Peer();roomStatus('Verbinde mit Lobby ...');
+      peer.on('open',()=>{
+        conn=peer.connect('ddf-'+room,{reliable:true});
+        conn.on('open',()=>roomStatus('Verbunden. Warte auf die Lobby ...'));
+        conn.on('data',data=>{
+          if(data.type==='WELCOME') {myPlayerId=data.playerId;roomStatus('Erfolgreich beigetreten!');}
+          if(data.type==='ERROR')alert(data.message);
+          if(data.type==='SYNC') applyHostState(data);
+        });
+        conn.on('close',()=>roomStatus('Verbindung zum Anführer getrennt. Bitte Link erneut öffnen.'));
+        conn.on('error',()=>roomStatus('Verbindung fehlgeschlagen.'));
       });
-
-      peer.on('error', (err) => {
-        alert('Konnte Raum nicht finden. Ist der Host online? Fehler: ' + err.type);
-      });
+      peer.on('error',e=>roomStatus('Raum nicht erreichbar: '+e.type));
     }
-
-    function setupConnectionEvents() {
-      if (!conn) return;
-
-      conn.on('open', () => {
-        console.log('Verbunden mit anderem Spieler!');
-        if (!state.isHost) {
-          alert('Erfolgreich mit dem Raum verbunden!');
-        }
-      });
-
-      conn.on('data', (data) => {
-        // Empfangene Daten vom anderen Spieler verarbeiten
-        if (data.type === 'STATE_UPDATE') {
-          state = data.state;
-          // UI je nachaktuellem Screen aktualisieren
-          if (document.getElementById('screen-lobby').classList.contains('hidden') === false) {
-            renderLobbyPlayers();
-            renderLobbyAvatars();
-          }
-        } else if (data.type === 'ANSWER_SUBMITTED') {
-          state.currentAnswers[data.playerId] = data.answerData;
-        }
-      });
+    function sendHost(data) {if(conn?.open)conn.send(data);}
+    function sendMyProfile() { if(state.onlineMode&&!state.isHost) { const p=state.players.find(p=>p.id===myPlayerId);if(p)sendHost({type:'PROFILE',name:p.name,avatarIndex:p.avatarIndex,team:p.team}); }else broadcastState(); }
+    function broadcastState() {
+      if(!state.onlineMode||!state.isHost)return;
+      currentScreen=['lobby','game','voting','result'].find(x=>!document.getElementById('screen-'+x).classList.contains('hidden'))||'lobby';
+      const {matchTimerInterval,questionTimerInterval,votingTimerInterval,isAdminLoggedIn,...safe}=state;
+      // No solutions or admin password are sent; each player receives only the public game state.
+      const packet={type:'SYNC',screen:currentScreen,state:safe};
+      connections.forEach(c=>{if(c.open)c.send(packet);});
     }
-
-    function sendStateToPeer() {
-      if (conn && conn.open) {
-        conn.send({ type: 'STATE_UPDATE', state: state });
+    function applyHostState(packet) {
+      const old=state;
+      state={...old,...packet.state,isHost:false,onlineMode:true,isAdminLoggedIn:false};
+      clearInterval(state.matchTimerInterval);clearInterval(state.questionTimerInterval);clearInterval(state.votingTimerInterval);
+      switchScreen(packet.screen);
+      const myIndex=state.players.findIndex(p=>p.id===myPlayerId);
+      state.activeEditingPlayerIndex=Math.max(0,myIndex);
+      if(packet.screen==='lobby') {renderLobbyPlayers();renderLobbyAvatars();updateTeamSelector();if(myIndex>=0)document.getElementById('player-name-input').value=state.players[myIndex].name;}
+      if(packet.screen==='game') {
+        const p=state.players[state.activePlayerTurnIndex],q=defaultQuestions[state.currentQuestionIndex%defaultQuestions.length];
+        document.getElementById('game-current-player-name').textContent=p?.name||'';
+        document.getElementById('active-player-title').textContent=(p?.name||'')+' ist am Zug';
+        document.getElementById('game-active-avatar-img').src=(defaultAvatars[p?.avatarIndex]||defaultAvatars[0]).img;
+        document.getElementById('game-question-text').textContent=q?.text||'';
+        document.getElementById('game-round-badge').textContent=`Durchgang ${state.currentRound} - Frage ${state.currentQuestionIndex+1}`;
+        document.getElementById('match-total-timer-display').textContent=formatTime(state.matchTimeRemaining);
+        document.getElementById('game-timer-display').textContent=state.questionTimeRemaining;
+        const mine=p?.id===myPlayerId;document.getElementById('player-answer-input').disabled=!mine;
+        document.getElementById('mic-btn').disabled=!mine;
+        if(old.currentQuestionIndex!==state.currentQuestionIndex)document.getElementById('player-answer-input').value='';
       }
+      if(packet.screen==='voting') {renderVotingCards();document.getElementById('voting-timer-display').textContent=formatTime(state.votingTimeRemaining);}
+      if(packet.screen==='result') {
+        const box=document.getElementById('result-summary-box');box.innerHTML='';
+        state.players.forEach(p=>{const el=document.createElement('div');el.className='p-3 bg-slate-900 rounded-xl';el.textContent=p.name+' – '+ '❤️'.repeat(p.lives);box.appendChild(el);});
+      }
+      document.getElementById('host-top-controls').classList.toggle('hidden',true);
+      document.getElementById('leader-options-box').classList.toggle('hidden',true);
+      document.querySelectorAll('[onclick="startMatch()"],[onclick="forceEndVoting()"],[onclick="startVotingPhase()"],[onclick="nextRoundOrGame()"],[onclick="togglePauseGame()"],[onclick="addHumanPlayer()"],[onclick="addBotPlayer()"],[onclick="returnToLobby()"],[onclick="openAdminModal()"],[onclick="createOnlineRoom()"],[onclick="joinOnlineRoom()"],[onclick="copyInviteLink()"],[onclick="restartMatchSameChars()"]').forEach(el=>el.classList.add('hidden'));
     }
-
+    function formatTime(s) {s=Math.max(0,s||0);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
     function copyInviteLink() {
-      if (!state.roomId) {
-        alert('Erstelle zuerst einen Online-Raum!');
-        return;
-      }
-      navigator.clipboard.writeText(state.roomId);
-      alert('Raumcode "' + state.roomId + '" in die Zwischenablage kopiert!');
+      if(!state.roomId)return alert('Bitte zuerst einen Raum erstellen!');
+      const link=roomLink();navigator.clipboard.writeText(link).then(()=>alert('Einladungslink kopiert!')).catch(()=>prompt('Link kopieren:',link));
     }
-
     // --- ADMIN LOGIK ---
-    function openAdminModal() { document.getElementById('admin-modal').classList.remove('hidden'); }
+    function openAdminModal() { if(state.onlineMode&&!state.isHost)return; document.getElementById('admin-modal').classList.remove('hidden'); }
     function closeAdminModal() { document.getElementById('admin-modal').classList.add('hidden'); }
     function checkAdminPassword() { if (document.getElementById('admin-password-input').value === 'minati') { state.isAdminLoggedIn = true; document.getElementById('admin-login-box').classList.add('hidden'); document.getElementById('admin-dashboard').classList.remove('hidden'); } else alert('Falsches Passwort!'); }
     function switchAdminTab(tab) { ['avatars', 'questions', 'settings'].forEach(t => { document.getElementById('admin-tab-' + t).classList.add('hidden'); document.getElementById('tab-btn-' + t).className = 'pb-3 text-sm font-bold text-slate-400 hover:text-white transition cursor-pointer'; }); document.getElementById('admin-tab-' + tab).classList.remove('hidden'); document.getElementById('tab-btn-' + tab).className = 'pb-3 text-sm font-bold text-amber-400 border-b-2 border-amber-400 transition cursor-pointer'; }
