@@ -170,6 +170,7 @@
         <p id="online-room-display" class="text-xs text-emerald-300"></p><p id="room-code-label" class="font-mono text-amber-300 text-sm"></p>
         <p class="text-xs text-slate-400">Jeder Freund öffnet den Einladungslink auf seinem eigenen Gerät. Einladungslink öffnen genügt – kein Code nötig. Der Host muss online bleiben.</p>
       </div>
+      <div class="mb-4 rounded-xl bg-slate-900 p-3 border border-slate-700"><label class="text-sm font-bold text-amber-300">Antworten speichern?</label><select id="answer-capture-select" onchange="updateLeaderSettings()" class="ml-2 bg-slate-950 rounded-lg p-2 text-sm"><option value="on">Ja – Sprache/Text</option><option value="off">Nein – nur mündlich</option></select><p class="text-xs text-slate-400 mt-1">Nur der Anführer kann diese Einstellung ändern.</p></div>
       <div id="team-self-box" class="mb-5 hidden"><label class="text-sm text-slate-300 font-bold">Mein Team wählen</label><select id="my-team-select" onchange="chooseMyTeam(this.value)" class="mt-2 w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white"></select></div>
       <!-- ACTION BUTTONS -->
       <div class="flex flex-col sm:flex-row gap-3">
@@ -222,7 +223,7 @@
 
       <!-- ANTWORT INPUT / SPRACHREZEPTOR -->
       <div class="space-y-4">
-        <div>
+        <div id="answer-controls">
           <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Deine Antwort (Sprechen oder Tippen)</label>
           <div class="flex gap-2">
             <input type="text" id="player-answer-input" placeholder="Antwort einsprechen oder eintippen..." onkeydown="if(event.key==='Enter')submitPlayerAnswer()" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white font-semibold focus:outline-none focus:border-rose-500 text-sm md:text-base">
@@ -268,6 +269,7 @@
       </div>
     </div>
 
+    <div id="screen-final" class="w-full max-w-3xl glass rounded-3xl p-6 hidden text-center space-y-5"><h2 class="text-3xl font-extrabold text-amber-400">🏆 Das große 1 gegen 1</h2><p id="final-players" class="text-lg font-bold"></p><p id="final-question" class="text-2xl font-bold p-5 bg-slate-900 rounded-xl"></p><p class="text-rose-300 font-bold">⏳ <span id="final-countdown">15</span> Sekunden</p><div id="final-entry" class="flex gap-2"><input id="final-answer-input" type="number" step="any" placeholder="Deine Schätzung als Zahl" class="flex-1 min-w-0 bg-slate-950 border border-slate-700 rounded-xl px-3 py-3"><button onclick="submitFinalAnswer()" class="px-4 py-2 bg-emerald-600 rounded-xl font-bold">Abgeben</button></div><button id="final-reveal-btn" onclick="revealFinal()" class="px-5 py-3 bg-amber-600 rounded-xl font-bold">Ergebnis anzeigen</button><div id="final-outcome" class="text-lg font-bold"></div><button id="final-next-btn" onclick="nextFinalQuestion()" class="hidden px-5 py-3 bg-indigo-600 rounded-xl font-bold">Nächste Schätzfrage</button></div>
     <!-- SCREEN 4: Runden-Ergebnis, Herzverlust & Aussetzen-Einstellung nach jedem Ablauf -->
     <div id="screen-result" class="w-full max-w-3xl glass rounded-3xl p-5 md:p-8 shadow-2xl hidden text-center">
       <span class="px-3 py-1 bg-amber-500/20 text-amber-400 rounded-full text-xs font-bold uppercase tracking-wider">Durchgang beendet – Auswertung</span>
@@ -1504,6 +1506,7 @@
       ]
 
 
+    const finalQuestions = [{"text": "Wie schwer ist die Erde?", "answer": "5,97 Trilliarden Tonnen"}, {"text": "Wie viele Haare hat ein Mensch durchschnittlich auf dem Kopf?", "answer": "ca. 100.000"}, {"text": "Wie hoch ist das Ulmer Münster?", "answer": "161,53 m"}, {"text": "Wie schwer ist ein ausgewachsener afrikanischer Elefantenbulle?", "answer": "ca. 6.000 kg"}, {"text": "Wie weit ist der Mond von der Erde entfernt?", "answer": "ca. 384.400 km"}, {"text": "Wie viele Stacheln hat ein Igel?", "answer": "ca. 5.000–7.000"}, {"text": "Wie hoch ist der Mount Everest?", "answer": "8.848,86 m"}, {"text": "Wie viele Liter Blut hat ein erwachsener Mensch?", "answer": "ca. 5 l"}, {"text": "Wie weit ist Berlin von Paris entfernt (Luftlinie)?", "answer": "ca. 880 km"}, {"text": "Wie schwer ist ein Kubikmeter Blei?", "answer": "ca. 11.340 kg"}, {"text": "Wie schnell läuft ein Gepard maximal?", "answer": "ca. 100 km/h"}, {"text": "Wie tief ist die tiefste bekannte Stelle im Meer?", "answer": "ca. 10.935 m"}, {"text": "Wie alt ist die Erde?", "answer": "ca. 4,54 Mrd. Jahre"}, {"text": "Wie schwer ist ein Blauwal?", "answer": "ca. 150 Tonnen"}, {"text": "Wie viele Knochen hat ein erwachsener Mensch?", "answer": "206"}, {"text": "Wie hoch ist der Eiffelturm mit Antenne?", "answer": "ca. 330 m"}, {"text": "Wie weit ist Tokio von Singapur entfernt (Luftlinie)?", "answer": "ca. 5.300 km"}, {"text": "Wie lange ist eine Elefantenkuh trächtig?", "answer": "ca. 22 Monate"}, {"text": "Wie schnell ist Licht?", "answer": "ca. 300.000 km/s"}, {"text": "Wie viele Zähne hat ein erwachsener Mensch inklusive Weisheitszähne?", "answer": "32"}, {"text": "Wie schwer ist ein Straußenei?", "answer": "ca. 1,5 kg"}, {"text": "Wie hoch ist der Burj Khalifa?", "answer": "828 m"}, {"text": "Wie lange braucht Sonnenlicht zur Erde?", "answer": "ca. 8 Min. 20 Sek."}, {"text": "Wie viele Herzen hat ein Oktopus?", "answer": "3"}, {"text": "Wie schwer ist das menschliche Gehirn?", "answer": "ca. 1,4 kg"}, {"text": "Wie lang ist die Donau?", "answer": "ca. 2.850 km"}, {"text": "Wie viele Flügelschläge macht eine Honigbiene pro Sekunde?", "answer": "ca. 200"}, {"text": "Wie hoch ist die Zugspitze?", "answer": "2.962 m"}, {"text": "Wie viel wiegt ein Liter Wasser?", "answer": "ca. 1 kg"}, {"text": "Wie lange schläft ein Koala täglich?", "answer": "ca. 18–20 Stunden"}, {"text": "Wie weit ist London von New York entfernt (Luftlinie)?", "answer": "ca. 5.570 km"}, {"text": "Wie schnell dreht sich die Erde am Äquator?", "answer": "ca. 1.670 km/h"}, {"text": "Wie viele Liter fasst eine normale Badewanne ungefähr?", "answer": "ca. 150–200 l"}, {"text": "Wie schwer ist ein ausgewachsener männlicher Löwe?", "answer": "ca. 190 kg"}, {"text": "Wie hoch ist der Kölner Dom?", "answer": "ca. 157 m"}, {"text": "Wie viele Sekunden hat ein Tag?", "answer": "86.400"}, {"text": "Wie lang wird ein Blauwal?", "answer": "ca. 30 m"}, {"text": "Wie weit ist München von Hamburg entfernt (Luftlinie)?", "answer": "ca. 610 km"}, {"text": "Wie schwer ist ein menschliches Herz?", "answer": "ca. 300 g"}, {"text": "Wie heiß ist die Oberfläche der Sonne?", "answer": "ca. 5.500 °C"}, {"text": "Wie viele Eier kann eine Bienenkönigin pro Tag legen?", "answer": "bis zu 2.000"}, {"text": "Wie hoch ist die Freiheitsstatue inklusive Sockel?", "answer": "ca. 93 m"}, {"text": "Wie viel wiegt ein Kubikmeter Gold?", "answer": "ca. 19.300 kg"}, {"text": "Wie lang ist die Chinesische Mauer mit allen historischen Abschnitten?", "answer": "ca. 21.200 km"}, {"text": "Wie schnell kann ein Strauß laufen?", "answer": "ca. 70 km/h"}, {"text": "Wie viele Atemzüge macht ein Erwachsener täglich?", "answer": "ca. 20.000"}, {"text": "Wie tief ist der Bodensee maximal?", "answer": "251 m"}, {"text": "Wie schwer ist eine Giraffe ungefähr?", "answer": "ca. 1.000 kg"}, {"text": "Wie weit ist die Sonne von der Erde entfernt?", "answer": "ca. 149,6 Mio. km"}, {"text": "Wie viele Minuten hat eine Woche?", "answer": "10.080"}, {"text": "Wie hoch ist der Berliner Fernsehturm?", "answer": "368 m"}, {"text": "Wie schwer ist ein ausgewachsener Gorilla-Mann?", "answer": "ca. 160 kg"}, {"text": "Wie groß ist die Fläche Deutschlands?", "answer": "ca. 357.600 km²"}, {"text": "Wie oft schlägt das menschliche Herz am Tag?", "answer": "ca. 100.000-mal"}, {"text": "Wie schnell wird ein Wanderfalke im Sturzflug?", "answer": "über 320 km/h"}, {"text": "Wie lang ist der Dünndarm eines Menschen?", "answer": "ca. 5–6 m"}, {"text": "Wie hoch ist der Kilimandscharo?", "answer": "5.895 m"}, {"text": "Wie viel wiegt ein Kubikmeter Luft bei Raumtemperatur?", "answer": "ca. 1,2 kg"}, {"text": "Wie alt ist das Universum?", "answer": "ca. 13,8 Mrd. Jahre"}, {"text": "Wie schwer ist ein neugeborener Blauwal?", "answer": "ca. 2.500 kg"}, {"text": "Wie viele Kilometer legt Licht in einer Minute zurück?", "answer": "ca. 18 Mio. km"}, {"text": "Wie hoch ist die Cheops-Pyramide heute?", "answer": "ca. 139 m"}, {"text": "Wie viele Liter Speichel produziert ein Mensch täglich?", "answer": "ca. 0,5–1,5 l"}, {"text": "Wie weit ist Berlin von Moskau entfernt (Luftlinie)?", "answer": "ca. 1.610 km"}, {"text": "Wie lange kann eine Riesenschildkröte leben?", "answer": "über 150 Jahre"}, {"text": "Wie schwer ist ein Liter Quecksilber?", "answer": "ca. 13,5 kg"}, {"text": "Wie viele Muskeln hat der menschliche Körper ungefähr?", "answer": "über 600"}, {"text": "Wie tief ist der Baikalsee maximal?", "answer": "1.642 m"}, {"text": "Wie schnell fliegt ein Passagierflugzeug normalerweise?", "answer": "ca. 850–900 km/h"}, {"text": "Wie viele Menschen passen ungefähr in ein großes Fußballstadion?", "answer": "ca. 80.000"}, {"text": "Wie hoch ist der Mount Fuji?", "answer": "3.776 m"}, {"text": "Wie schwer ist ein ausgewachsenes Flusspferd?", "answer": "ca. 1.500 kg"}, {"text": "Wie viele Tage dauert eine Schwangerschaft beim Menschen ungefähr?", "answer": "280 Tage"}, {"text": "Wie lang ist der Nil ungefähr?", "answer": "ca. 6.650 km"}, {"text": "Wie viele Liter Wasser verbraucht eine fünfminütige Dusche?", "answer": "ca. 50 l"}, {"text": "Wie schnell ist die Erde auf ihrer Bahn um die Sonne?", "answer": "ca. 107.000 km/h"}, {"text": "Wie schwer ist ein durchschnittlicher Fußball?", "answer": "ca. 430 g"}, {"text": "Wie hoch ist das Empire State Building mit Antenne?", "answer": "ca. 443 m"}, {"text": "Wie viele Geschmacksknospen hat ein Mensch ungefähr?", "answer": "ca. 5.000–10.000"}, {"text": "Wie groß ist Australien?", "answer": "ca. 7,69 Mio. km²"}, {"text": "Wie lang kann ein Salzwasserkrokodil werden?", "answer": "ca. 6 m"}, {"text": "Wie viele Liter Benzin passen in den Tank eines normalen Pkw?", "answer": "ca. 50–60 l"}, {"text": "Wie hoch ist der höchste Wasserfall der Erde?", "answer": "979 m"}, {"text": "Wie viele Kilometer legt ein Mensch bei 10.000 Schritten ungefähr zurück?", "answer": "ca. 7–8 km"}, {"text": "Wie schwer ist ein ausgewachsener Eisbär-Mann?", "answer": "ca. 450 kg"}, {"text": "Wie weit ist Frankfurt von Dubai entfernt (Luftlinie)?", "answer": "ca. 4.850 km"}, {"text": "Wie viele Liter Blut pumpt das Herz pro Minute in Ruhe?", "answer": "ca. 5 l"}, {"text": "Wie hoch ist der Schiefe Turm von Pisa?", "answer": "ca. 56 m"}, {"text": "Wie viele Zähne hat ein erwachsener Hund normalerweise?", "answer": "42"}, {"text": "Wie schwer ist ein Kubikmeter Beton?", "answer": "ca. 2.400 kg"}, {"text": "Wie groß ist Russland?", "answer": "ca. 17,1 Mio. km²"}, {"text": "Wie schnell kann ein Pferd im Galopp laufen?", "answer": "ca. 60 km/h"}, {"text": "Wie viele Stunden hat ein normales Jahr?", "answer": "8.760"}, {"text": "Wie lang ist ein menschlicher Dickdarm ungefähr?", "answer": "ca. 1,5 m"}, {"text": "Wie hoch ist der Mont Blanc ungefähr?", "answer": "ca. 4.806 m"}, {"text": "Wie viele Kilometer ist der Erdumfang am Äquator?", "answer": "ca. 40.075 km"}, {"text": "Wie schwer ist ein durchschnittliches Hühnerei?", "answer": "ca. 60 g"}, {"text": "Wie schnell kann ein Delfin schwimmen?", "answer": "ca. 35 km/h"}, {"text": "Wie viele Liter Wasser enthält ein olympisches Schwimmbecken mit 2 m Tiefe?", "answer": "ca. 2,5 Mio. l"}, {"text": "Wie groß ist die Sahara?", "answer": "ca. 9,2 Mio. km²"}, {"text": "Wie schwer ist ein durchschnittlicher erwachsener Wolf?", "answer": "ca. 40 kg"}, {"text": "Wie lange braucht der Mond für eine Umrundung der Erde?", "answer": "ca. 27,3 Tage"}, {"text": "Wie viele Kilometer ist Berlin von Tokio entfernt (Luftlinie)?", "answer": "ca. 8.900 km"}, {"text": "Wie viel wiegt ein Kubikmeter Aluminium?", "answer": "ca. 2.700 kg"}, {"text": "Wie viele Liter Luft fasst die Lunge eines Erwachsenen maximal ungefähr?", "answer": "ca. 6 l"}, {"text": "Wie hoch ist der höchste Berg Afrikas?", "answer": "5.895 m"}, {"text": "Wie schnell kann ein Formel-1-Auto auf einer langen Geraden fahren?", "answer": "ca. 350 km/h"}, {"text": "Wie viele Eier legt ein Huhn ungefähr pro Jahr?", "answer": "ca. 250–300"}, {"text": "Wie weit ist Paris von Rom entfernt (Luftlinie)?", "answer": "ca. 1.100 km"}, {"text": "Wie schwer ist ein durchschnittlicher ausgewachsener Tiger-Mann?", "answer": "ca. 200 kg"}, {"text": "Wie viele Liter Wasser passen in einen Kubikmeter?", "answer": "1.000 l"}, {"text": "Wie lange dauert eine vollständige Erdumrundung der ISS?", "answer": "ca. 90 Minuten"}, {"text": "Wie viele Menschen leben ungefähr auf der Erde (2026)?", "answer": "ca. 8,3 Mrd."}, {"text": "Wie hoch ist die maximale Sprunghöhe eines Kängurus ungefähr?", "answer": "ca. 3 m"}, {"text": "Wie schwer ist ein Kubikmeter Eisen?", "answer": "ca. 7.870 kg"}, {"text": "Wie viele Zähne hat ein erwachsenes Pferd typischerweise?", "answer": "ca. 36–44"}, {"text": "Wie lang ist der Amazonas ungefähr?", "answer": "ca. 6.400 km"}, {"text": "Wie viel wiegt eine normale Tafel Schokolade?", "answer": "ca. 100 g"}, {"text": "Wie schnell bewegt sich Schall durch Luft bei 20 °C?", "answer": "ca. 343 m/s"}, {"text": "Wie viele Liter Wasser verbraucht eine Waschmaschine pro Waschgang ungefähr?", "answer": "ca. 40–60 l"}, {"text": "Wie hoch ist die durchschnittliche Körpertemperatur eines gesunden Menschen?", "answer": "ca. 37 °C"}, {"text": "Wie schwer ist ein ausgewachsenes Nashorn ungefähr?", "answer": "ca. 2.000 kg"}, {"text": "Wie viele Kilometer ist Sydney von Los Angeles entfernt (Luftlinie)?", "answer": "ca. 12.050 km"}, {"text": "Wie viele Tage braucht die Erde für einen Umlauf um die Sonne?", "answer": "ca. 365,25 Tage"}, {"text": "Wie schwer ist ein Liter Olivenöl?", "answer": "ca. 910 g"}, {"text": "Wie viele Kilometer legt ein Auto bei 130 km/h in 15 Minuten zurück?", "answer": "32,5 km"}, {"text": "Wie hoch ist die durchschnittliche Höhe eines Basketballkorbs?", "answer": "3,05 m"}, {"text": "Wie viele Liter Blut hat ein Elefant ungefähr?", "answer": "ca. 300 l"}, {"text": "Wie lange kann ein Pottwal ungefähr unter Wasser bleiben?", "answer": "ca. 60–90 Minuten"}, {"text": "Wie viele Kilometer ist München von Istanbul entfernt (Luftlinie)?", "answer": "ca. 1.580 km"}, {"text": "Wie schwer ist ein Kubikmeter Silber?", "answer": "ca. 10.490 kg"}, {"text": "Wie hoch ist der höchste Berg Europas (Elbrus)?", "answer": "5.642 m"}, {"text": "Wie viele Kalorien enthält ein Kilogramm reines Körperfett ungefähr?", "answer": "ca. 7.700 kcal"}, {"text": "Wie viele Meter legt ein Mensch bei normalem Gehen pro Minute zurück?", "answer": "ca. 80 m"}, {"text": "Wie schwer ist ein ausgewachsenes männliches Kamel ungefähr?", "answer": "ca. 600 kg"}, {"text": "Wie viele Kilometer beträgt der Durchmesser der Sonne?", "answer": "ca. 1,39 Mio. km"}, {"text": "Wie lange braucht ein Mensch ungefähr, um 1 km zu Fuß zu gehen?", "answer": "ca. 12 Minuten"}, {"text": "Wie viele Knochen hat ein Neugeborenes ungefähr?", "answer": "ca. 270"}, {"text": "Wie tief liegt die Oberfläche des Toten Meeres unter dem Meeresspiegel?", "answer": "ca. 435 m"}, {"text": "Wie viele Kilometer kann ein ausgewachsener Wolf an einem Tag zurücklegen?", "answer": "ca. 50 km"}, {"text": "Wie schwer ist ein Kubikmeter Kupfer?", "answer": "ca. 8.960 kg"}, {"text": "Wie viele Stunden schläft eine Hauskatze täglich ungefähr?", "answer": "ca. 12–16 Stunden"}, {"text": "Wie viele Kilometer ist die Erde im Durchschnitt von Neptun entfernt?", "answer": "ca. 4,35 Mrd. km"}, {"text": "Wie viele Kilogramm Bambus frisst ein Panda täglich?", "answer": "ca. 12–38 kg"}, {"text": "Wie schnell kann ein Mensch im Sprint maximal laufen?", "answer": "ca. 45 km/h"}, {"text": "Wie viele Liter fasst ein normaler Fußball ungefähr?", "answer": "ca. 5,5 l"}, {"text": "Wie viele Kilometer lang ist die Golden Gate Bridge insgesamt?", "answer": "ca. 2,7 km"}, {"text": "Wie schwer ist ein ausgewachsener Braunbär-Mann ungefähr?", "answer": "ca. 300 kg"}, {"text": "Wie viele Sekunden braucht Licht von der Erde zum Mond?", "answer": "ca. 1,28 Sekunden"}, {"text": "Wie viele Kilometer ist die engste Stelle zwischen Europa und Afrika an der Straße von Gibraltar breit?", "answer": "ca. 14 km"}];
     // --- APP STATE ---
     let state = {
       isAdminLoggedIn: false,
@@ -1534,7 +1537,8 @@
       hostSolutionsVisible: false,
       isHost: true,
       roomId: null,
-      onlineMode: false
+      onlineMode: false,
+      leaderId: 'p1', answerCapture: true, finalQuestionIndex: 0, finalAnswers: {}, finalSeconds: 15, finalRevealed: false, finalWinner: null
     };
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -1544,7 +1548,8 @@
       renderLobbyAvatars();
       renderLobbyPlayers();
       renderAdminAvatars();
-      renderAdminQuestions();
+      renderAdminQuestions();refreshLeaderUI();
+      document.getElementById('answer-capture-select').value=state.answerCapture?'on':'off';
     });
 
     function loadLocalStorageData() {
@@ -1560,7 +1565,8 @@
     }
 
     function switchScreen(screenId) {
-      ['screen-lobby', 'screen-game', 'screen-voting', 'screen-result'].forEach(id => document.getElementById(id).classList.add('hidden'));
+      currentScreen=screenId;
+      ['screen-lobby', 'screen-game', 'screen-voting', 'screen-result', 'screen-final'].forEach(id => document.getElementById(id).classList.add('hidden'));
       document.getElementById('screen-' + screenId).classList.remove('hidden');
     }
 
@@ -1639,7 +1645,7 @@
       const av = defaultAvatars[p.avatarIndex] || defaultAvatars[0];
       document.getElementById('preview-avatar-img').src = av.img;
       document.getElementById('editing-player-indicator').textContent = `${p.name} (${p.isBot ? 'Bot' : 'Spieler ' + (state.activeEditingPlayerIndex + 1)})`;
-      document.getElementById('preview-leader-badge').classList.toggle('hidden', state.activeEditingPlayerIndex !== 0);
+      document.getElementById('preview-leader-badge').classList.toggle('hidden', p.id !== state.leaderId);
       const teamContainer = document.getElementById('team-assignment-badge');
       if (state.teamsMode !== 'off') { teamContainer.classList.remove('hidden'); teamContainer.textContent = p.team ? `Team: ${p.team.toUpperCase()}` : 'Team: Keins'; }
       else { teamContainer.classList.add('hidden'); teamContainer.textContent = ''; }
@@ -1653,7 +1659,7 @@
         const av = defaultAvatars[p.avatarIndex] || defaultAvatars[0];
         const card = document.createElement('div');
         card.className = `flex items-center gap-2 p-2 rounded-xl border cursor-pointer transition ${idx === state.activeEditingPlayerIndex ? 'bg-amber-500/20 border-amber-500/50' : 'bg-slate-900 border-slate-700 hover:border-amber-500/30'}`;
-        card.innerHTML = `<img src="${av.img}" class="w-8 h-8 rounded-lg object-cover"><div class="text-left"><p class="text-xs font-bold text-white leading-tight">${p.name}</p><p class="text-[9px] text-slate-400">${p.isBot ? 'Bot' : 'Spieler'}</p></div>`;
+        card.innerHTML = `<div class="relative">${p.id===state.leaderId?'<span class="absolute -top-4 left-2 text-lg">👑</span>':''}<img src="${av.img}" class="w-8 h-8 rounded-lg object-cover"></div><div class="text-left"><p class="text-xs font-bold text-white leading-tight">${esc(p.name)}</p><p class="text-[9px] text-slate-400">${p.isBot ? 'Bot' : 'Spieler'}</p></div>${amLeader() && p.id!==state.leaderId ? `<div class="flex flex-col gap-1 ml-2"><button class="text-[10px] text-amber-300" onclick="event.stopPropagation();promotePlayer('${p.id}')">👑 Ernennen</button><button class="text-[10px] text-rose-300" onclick="event.stopPropagation();kickPlayer('${p.id}')">✕ Entfernen</button></div>`:''}`;
         card.onclick = () => { if (state.onlineMode && !state.isHost && p.id !== myPlayerId) return; state.activeEditingPlayerIndex = idx; updatePreviewCard(); renderLobbyPlayers(); };
         grid.appendChild(card);
       });
@@ -1674,6 +1680,9 @@
     function updateActivePlayerName(val) { if (state.onlineMode && !state.isHost && state.players[state.activeEditingPlayerIndex]?.id !== myPlayerId) return; if (state.players[state.activeEditingPlayerIndex]) state.players[state.activeEditingPlayerIndex].name = val; renderLobbyPlayers(); sendMyProfile(); }
     function resetPlayerName() { const p = state.players[state.activeEditingPlayerIndex]; if (!p || (state.onlineMode && !state.isHost && p.id !== myPlayerId)) return; p.name = defaultAvatars[p.avatarIndex].name; document.getElementById('player-name-input').value = p.name; renderLobbyPlayers(); sendMyProfile(); }
     function updateLeaderSettings() {
+      if (!amLeader()) return;
+      if (state.onlineMode && !state.isHost) {sendHost({type:'LEADER_SETTINGS',matchTimeMinutes:+document.getElementById('leader-matchtime-select').value,timerSeconds:+document.getElementById('leader-timer-select').value,startLives:+document.getElementById('leader-lives-select').value,teamsMode:document.getElementById('leader-teams-select').value,answerCapture:document.getElementById('answer-capture-select').value==='on'});return;}
+      state.answerCapture=document.getElementById('answer-capture-select').value==='on';
       state.matchTimeMinutes = parseInt(document.getElementById('leader-matchtime-select').value) || 2;
       state.timerSeconds = parseInt(document.getElementById('leader-timer-select').value) || 15;
       state.startLives = parseInt(document.getElementById('leader-lives-select').value) || 3;
@@ -1699,8 +1708,9 @@
     }
     // --- SPIEL LOGIK ---
     function startMatch() {
-      if (state.onlineMode && !state.isHost) return;
-      state.currentRound = 1; state.currentQuestionIndex = 0; state.activePlayerTurnIndex = 0;
+      if (state.onlineMode && !state.isHost) {if(amLeader())sendHost({type:'LEADER_ACTION',action:'startMatch'});return;}
+      if (state.players.filter(p=>p.lives>0&&!p.skippedNext).length===2) {startFinal();return;}
+      state.currentQuestionIndex = 0; state.activePlayerTurnIndex = Math.max(0,state.players.findIndex(p=>p.lives>0));
       state.matchTimeRemaining = state.matchTimeMinutes * 60; state.currentAnswers = {}; state.votes = {}; state.ballots = {}; switchScreen('game'); startMatchTimer(); loadNextQuestionForActivePlayer(); broadcastState();
     }
     function startMatchTimer() {
@@ -1716,7 +1726,7 @@
     }
     function loadNextQuestionForActivePlayer() {
       let loops = 0;
-      while (state.players[state.activePlayerTurnIndex]?.skippedNext && loops < state.players.length) {
+      while ((state.players[state.activePlayerTurnIndex]?.skippedNext || state.players[state.activePlayerTurnIndex]?.lives<=0) && loops < state.players.length) {
         state.players[state.activePlayerTurnIndex].skippedNext = false; 
         state.activePlayerTurnIndex = (state.activePlayerTurnIndex + 1) % state.players.length;
         loops++;
@@ -1725,7 +1735,7 @@
       document.getElementById('game-current-player-name').textContent = p.name; document.getElementById('active-player-title').textContent = p.name + ' ist am Zug';
       document.getElementById('game-active-avatar-img').src = av.img; document.getElementById('game-round-badge').textContent = `Durchgang ${state.currentRound} - Frage ${state.currentQuestionIndex + 1}`;
       const q = defaultQuestions[state.currentQuestionIndex % defaultQuestions.length];
-      document.getElementById('game-question-text').textContent = q.text; document.getElementById('player-answer-input').value = '';
+      document.getElementById('game-question-text').textContent = q.text; document.getElementById('player-answer-input').value = ''; document.getElementById('answer-controls').classList.toggle('hidden',!state.answerCapture);
       // Vorlesestimme entfernt; Mikrofoneingabe bleibt.
       broadcastState();
       if (p.isBot) { setTimeout(() => { document.getElementById('player-answer-input').value = 'Mhmm...'; submitPlayerAnswer(); }, 2500); }
@@ -1743,35 +1753,35 @@
     function submitPlayerAnswer() {
       if (state.onlineMode && !state.isHost) {
         if (state.players[state.activePlayerTurnIndex]?.id !== myPlayerId) return;
-        sendHost({type:"ANSWER", answer:document.getElementById("player-answer-input").value.trim() || "(Keine Antwort)"});
+        sendHost({type:"ANSWER", answer:state.answerCapture ? (document.getElementById("player-answer-input").value.trim() || "(Keine Antwort)") : '(Mündlich beantwortet)'});
         document.getElementById("player-answer-input").disabled = true; return;
       }
       clearInterval(state.questionTimerInterval);
-      const val = document.getElementById('player-answer-input').value.trim() || '(Keine Antwort)';
+      const val = state.answerCapture ? (document.getElementById('player-answer-input').value.trim() || '(Keine Antwort)') : '(Mündlich beantwortet)';
       state.currentAnswers[state.players[state.activePlayerTurnIndex].id] = { questionIndex: state.currentQuestionIndex, answer: val };
       state.currentQuestionIndex++; state.activePlayerTurnIndex = (state.activePlayerTurnIndex + 1) % state.players.length;
       if (state.matchTimeRemaining <= 0) startVotingPhase(); else loadNextQuestionForActivePlayer();
       broadcastState();
     }
-    function togglePauseGame() { if (state.onlineMode && !state.isHost) return; state.gamePaused = !state.gamePaused; document.getElementById('pause-btn').textContent = state.gamePaused ? '▶️ Fortsetzen' : '⏸️ Pause'; broadcastState(); }
+    function togglePauseGame() { if (state.onlineMode && !state.isHost) {if(amLeader())sendHost({type:'LEADER_ACTION',action:'togglePauseGame'});return;} state.gamePaused = !state.gamePaused; document.getElementById('pause-btn').textContent = state.gamePaused ? '▶️ Fortsetzen' : '⏸️ Pause'; broadcastState(); }
 
     // --- VOTING LOGIK ---
     function esc(v) { return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
     function startVotingPhase() {
-      if (state.onlineMode && !state.isHost) return;
+      if (state.onlineMode && !state.isHost) {if(amLeader())sendHost({type:'LEADER_ACTION',action:'startVotingPhase'});return;}
       clearInterval(state.matchTimerInterval); clearInterval(state.questionTimerInterval); switchScreen('voting');
       state.votes = {}; state.ballots = {};
       state.players.forEach(p => state.votes[p.id] = 0);
       renderVotingCards(); startVotingTimer(); broadcastState();
     }
     function renderVotingCards() {
-      const grid = document.getElementById('voting-answers-grid'); grid.innerHTML = '';
+      const grid = document.getElementById('voting-answers-grid'); const openIds=new Set([...grid.querySelectorAll('details[open]')].map(el=>el.dataset.player)); grid.innerHTML = '';
       state.players.forEach(p => {
         const ansObj = state.currentAnswers[p.id] || {answer:'(Nicht teilgenommen)', questionIndex:0};
         const q = defaultQuestions[(ansObj.questionIndex || 0) % defaultQuestions.length] || {text:'',answer:''};
         const av = defaultAvatars[p.avatarIndex] || defaultAvatars[0];
         const card = document.createElement('div'); card.className = 'glass rounded-2xl p-4 border border-slate-800 flex flex-col justify-between';
-        card.innerHTML = `<div><div class="flex items-center gap-3 mb-3"><img src="${av.img}" class="w-10 h-10 rounded-xl object-cover"><h4 class="font-bold">${esc(p.name)} ${'❤️'.repeat(Math.max(0,p.lives))}</h4></div><details class="mb-3 rounded-xl bg-slate-950 p-3"><summary class="cursor-pointer text-sm text-amber-300">Frage und Antwort anzeigen</summary><p class="mt-2 text-sm">${esc(q.text)}</p><p class="mt-2 text-rose-300 font-bold">${esc(ansObj.answer)}</p></details>${state.isHost ? `<details class="mb-3 rounded-xl bg-indigo-950/60 p-3"><summary class="cursor-pointer text-xs text-indigo-300">👑 Richtige Antwort (nur Anführer)</summary><p class="mt-2 text-sm">${esc(q.answer)}</p></details>` : ''}</div><div class="flex justify-between items-center"><span class="text-xs">Stimmen: <b id="vote-count-${esc(p.id)}">${state.votes[p.id]||0}</b></span><button onclick="addVoteForPlayer('${esc(p.id)}')" class="px-3 py-2 rounded-xl bg-rose-600/30 text-rose-300 text-xs font-bold">👎 Stimme</button></div>`;
+        card.innerHTML = `<div><div class="flex items-center gap-3 mb-3"><img src="${av.img}" class="w-10 h-10 rounded-xl object-cover"><h4 class="font-bold">${esc(p.name)} ${'❤️'.repeat(Math.max(0,p.lives))}</h4></div><details data-player="${p.id}" ${openIds.has(p.id)?'open':''} class="mb-3 rounded-xl bg-slate-950 p-3"><summary class="cursor-pointer text-sm text-amber-300">Frage und Antwort anzeigen</summary><p class="mt-2 text-sm">${esc(q.text)}</p><p class="mt-2 text-rose-300 font-bold">${esc(ansObj.answer)}</p></details>${amLeader() ? `<details data-player="solution-${p.id}" ${openIds.has('solution-'+p.id)?'open':''} class="mb-3 rounded-xl bg-indigo-950/60 p-3"><summary class="cursor-pointer text-xs text-indigo-300">👑 Richtige Antwort (nur Anführer)</summary><p class="mt-2 text-sm">${esc(q.answer)}</p></details>` : ''}</div><div class="flex justify-between items-center"><span class="text-xs">Stimmen: <b id="vote-count-${esc(p.id)}">${state.votes[p.id]||0}</b></span><button onclick="addVoteForPlayer('${esc(p.id)}')" class="px-3 py-2 rounded-xl bg-rose-600/30 text-rose-300 text-xs font-bold">👎 Stimme</button></div>`;
         grid.appendChild(card);
       });
     }
@@ -1797,10 +1807,13 @@
       if (state.onlineMode && Object.keys(state.ballots).length >= state.players.filter(p=>!p.isBot).length) forceEndVoting();
     }
     function forceEndVoting() {
-      if (state.onlineMode && !state.isHost) return;
+      if (state.onlineMode && !state.isHost) {if(amLeader())sendHost({type:'LEADER_ACTION',action:'forceEndVoting'});return;}
+      if(currentScreen==='result')return;
       clearInterval(state.votingTimerInterval); switchScreen('result');
-      let maxVotes = -1, loserIds = [];
-      Object.keys(state.votes).forEach(pid => { if (state.votes[pid] > maxVotes) { maxVotes = state.votes[pid]; loserIds = [pid]; } else if (state.votes[pid] === maxVotes) { loserIds.push(pid); } });
+      const maxVotes = Math.max(0,...Object.values(state.votes));
+      const tied = state.players.filter(p=>p.lives>0 && (state.votes[p.id]||0)===maxVotes);
+      // Bei Gleichstand verliert niemand ein Herz: niemals mehrere Verlierer.
+      const loserIds = maxVotes>0 && tied.length===1 ? [tied[0].id] : [];
       const summaryBox = document.getElementById('result-summary-box'); summaryBox.innerHTML = '';
       state.players.forEach(p => {
         const isLoser = loserIds.includes(p.id) && maxVotes > 0; if (isLoser) p.lives = Math.max(0, p.lives - 1);
@@ -1808,13 +1821,87 @@
         row.innerHTML = `<div class="flex items-center gap-2"><span class="text-xs font-bold text-white">${p.name}</span>${isLoser ? '<span class="text-[10px] bg-rose-500 text-white px-1.5 py-0.5 rounded font-bold">-1 Leben!</span>' : ''}</div><div class="flex items-center gap-3"><span class="text-xs text-slate-400">Leben: ${'❤️'.repeat(p.lives)}${'🖤'.repeat(p.maxLives - p.lives)}</span><label class="flex items-center gap-1 text-[10px] text-amber-400 cursor-pointer"><input type="checkbox" onchange="toggleSkip('${p.id}', this.checked)" ${p.skippedNext ? 'checked' : ''}> Aussetzen</label></div>`;
         summaryBox.appendChild(row);
       });
-      document.getElementById('result-headline').textContent = maxVotes > 0 ? 'Das Urteil ist gefallen!' : 'Niemand hat Stimmen erhalten!';
+      document.getElementById('result-headline').textContent = loserIds.length ? 'Das Urteil ist gefallen!' : (maxVotes ? 'Gleichstand – niemand verliert ein Herz!' : 'Niemand hat Stimmen erhalten!');
       broadcastState();
     }
     function toggleSkip(pid, checked) { if (state.onlineMode && !state.isHost) return; const p = state.players.find(x => x.id === pid); if(p) p.skippedNext = checked; broadcastState(); }
-    function nextRoundOrGame() { if (state.onlineMode && !state.isHost) return; state.currentRound++; state.currentAnswers = {}; state.votes = {}; startMatch(); }
-    function returnToLobby() { if (state.onlineMode && !state.isHost) return; clearInterval(state.matchTimerInterval); clearInterval(state.questionTimerInterval); clearInterval(state.votingTimerInterval); switchScreen('lobby'); broadcastState(); }
-    function restartMatchSameChars() { if (state.onlineMode && !state.isHost) return; state.players.forEach(p => { p.lives = state.startLives; p.skippedNext = false; }); state.currentRound = 1; startMatch(); }
+    function nextRoundOrGame() { if (state.onlineMode && !state.isHost) {if(amLeader())sendHost({type:'LEADER_ACTION',action:'nextRoundOrGame'});return;} state.currentRound++; state.currentAnswers = {}; state.votes = {}; if(state.players.filter(p=>p.lives>0).length===2) startFinal(); else startMatch(); }
+    function returnToLobby() { if (state.onlineMode && !state.isHost) {if(amLeader())sendHost({type:'LEADER_ACTION',action:'returnToLobby'});return;} clearInterval(state.matchTimerInterval); clearInterval(state.questionTimerInterval); clearInterval(state.votingTimerInterval); switchScreen('lobby'); broadcastState(); }
+    function restartMatchSameChars() { if (state.onlineMode && !state.isHost) {if(amLeader())sendHost({type:'LEADER_ACTION',action:'restartMatchSameChars'});return;} state.players.forEach(p => { p.lives = state.startLives; p.skippedNext = false; }); state.currentRound = 1; startMatch(); }
+    function amLeader(){return !state.onlineMode || myPlayerId===state.leaderId;}
+    function refreshLeaderUI(){
+      const leader=amLeader();
+      document.getElementById('host-top-controls').classList.toggle('hidden',!leader);
+      document.getElementById('leader-options-box').classList.toggle('hidden',!leader);
+      document.getElementById('answer-capture-select').disabled=!leader;
+      document.querySelectorAll('[onclick="startMatch()"],[onclick="forceEndVoting()"],[onclick="startVotingPhase()"],[onclick="nextRoundOrGame()"],[onclick="togglePauseGame()"],[onclick="returnToLobby()"],[onclick="restartMatchSameChars()"]').forEach(el=>el.classList.toggle('hidden',!leader));
+    }
+    function promotePlayer(id, authorized=false){
+      if(!(amLeader()||authorized) || !state.players.some(p=>p.id===id&&!p.isBot))return;
+      if(state.onlineMode&&!state.isHost){sendHost({type:'LEADER_MANAGE',action:'promote',target:id});return;}
+      state.leaderId=id;state.players.forEach(p=>p.isLeader=p.id===id);renderLobbyPlayers();refreshLeaderUI();broadcastState();
+    }
+    function kickPlayer(id, authorized=false){
+      if(!(amLeader()||authorized)||id===state.leaderId)return;
+      if(state.onlineMode&&!state.isHost){sendHost({type:'LEADER_MANAGE',action:'kick',target:id});return;}
+      if(!authorized && !confirm('Diesen Spieler aus der Lobby entfernen?'))return;
+      const c=[...connections.values()].find(c=>c.playerId===id);
+      if(c){c.send({type:'KICKED'});setTimeout(()=>c.close(),100);connections.delete(c.peer);}
+      state.players=state.players.filter(p=>p.id!==id);state.activeEditingPlayerIndex=0;renderLobbyPlayers();renderLobbyAvatars();broadcastState();
+    }
+    function startFinal(){
+      if(state.onlineMode&&!state.isHost)return;
+      clearInterval(state.matchTimerInterval);clearInterval(state.questionTimerInterval);clearInterval(state.votingTimerInterval);
+      state.finalAnswers={};state.finalRevealed=false;state.finalWinner=null;state.finalSeconds=15;document.getElementById('final-answer-input').value='';
+      state.finalQuestionIndex=(state.finalQuestionIndex||0)%finalQuestions.length;
+      switchScreen('final');renderFinal();broadcastState();
+      clearInterval(state.finalTimerInterval);
+      state.finalTimerInterval=setInterval(()=>{if(state.finalRevealed)return;state.finalSeconds--;renderFinal();broadcastState();if(state.finalSeconds<=0)revealFinal();},1000);
+    }
+    function recordFinalAnswer(id,value){
+      if(state.finalRevealed || currentScreen!=='final'||state.finalSeconds<=0)return;
+      if(!state.players.some(p=>p.id===id&&p.lives>0))return;
+      if(Object.hasOwn(state.finalAnswers,id))return;
+      const n=Number(String(value).replace(',','.'));
+      if(!Number.isFinite(n)||String(value).trim()==='')return;
+      state.finalAnswers[id]=n;renderFinal();broadcastState();
+      if(state.players.filter(p=>p.lives>0).every(p=>Object.hasOwn(state.finalAnswers,p.id)))revealFinal();
+    }
+    function submitFinalAnswer(){
+      const el=document.getElementById('final-answer-input');
+      if(state.onlineMode&&!state.isHost){if(el.value.trim()===''||!Number.isFinite(Number(el.value.replace(',','.'))))return;sendHost({type:'FINAL_ANSWER',answer:el.value});el.disabled=true;return;}
+      recordFinalAnswer(myPlayerId,el.value);el.disabled=true;
+    }
+    function revealFinal(){
+      if(state.onlineMode&&!state.isHost){if(amLeader())sendHost({type:'LEADER_ACTION',action:'revealFinal'});return;}
+      if(state.finalRevealed)return;
+      clearInterval(state.finalTimerInterval);state.finalSeconds=0;state.finalRevealed=true;
+      const q=finalQuestions[state.finalQuestionIndex%finalQuestions.length];
+      // Finale verwendet die hinterlegten Antworten; bei Spannweiten gilt der Mittelpunkt.
+      const nums=(q.answer.match(/\d[\d.,]*/g)||[]).map(t=>Number(t.replace(/\.(?=\d{3}(?:\D|$))/g,'').replace(',','.'))).filter(Number.isFinite);
+      let target=nums.length===2 ? (/Min\.|Minuten/i.test(q.answer)&&/Sek\.|Sekunden/i.test(q.answer)?nums[0]+nums[1]/60:(nums[0]+nums[1])/2) : nums[0];
+      // Zahlen werden in der in der Musterlösung verwendeten Einheit eingegeben (z.B. 5,97 Trilliarden -> 5,97).
+      const contestants=state.players.filter(p=>p.lives>0);
+      const ranked=contestants.map(p=>({p,value:state.finalAnswers[p.id],dist:Object.hasOwn(state.finalAnswers,p.id)?Math.abs(state.finalAnswers[p.id]-target):Infinity})).sort((a,b)=>a.dist-b.dist);
+      state.finalWinner=ranked[0].dist<ranked[1].dist?ranked[0].p.id:null;
+      renderFinal();broadcastState();
+    }
+    function renderFinal(){
+      const q=finalQuestions[state.finalQuestionIndex%finalQuestions.length];
+      const ps=state.players.filter(p=>p.lives>0);
+      document.getElementById('final-players').textContent=ps.map(p=>(p.id===state.leaderId?'👑 ':'')+p.name).join('  ⚔️  ');
+      document.getElementById('final-question').textContent=q.text;
+      document.getElementById('final-countdown').textContent=state.finalSeconds;
+      const myActive=ps.some(p=>p.id===myPlayerId);
+      document.getElementById('final-entry').classList.toggle('hidden',state.finalRevealed||!myActive);
+      document.getElementById('final-answer-input').disabled=state.finalRevealed||Object.hasOwn(state.finalAnswers,myPlayerId);
+      document.getElementById('final-answer-input').placeholder='Zahl schätzen (Einheit laut Frage)';
+      document.getElementById('final-reveal-btn').classList.toggle('hidden',!amLeader()||state.finalRevealed);
+      const out=document.getElementById('final-outcome');
+      out.textContent=state.finalRevealed?`Richtige Antwort: ${q.answer} | ${ps.map(p=>p.name+': '+(state.finalAnswers[p.id]??'keine Antwort')).join(' | ')} | ${state.finalWinner?'🏆 '+ps.find(p=>p.id===state.finalWinner)?.name+' gewinnt!':'Unentschieden – neue Schätzfrage!'}!`:Object.keys(state.finalAnswers).length+' von '+ps.length+' Schätzungen abgegeben';
+      document.getElementById('final-next-btn').classList.toggle('hidden',!amLeader()||!state.finalRevealed||!!state.finalWinner);
+    }
+    function nextFinalQuestion(){if(state.onlineMode&&!state.isHost){if(amLeader())sendHost({type:'LEADER_ACTION',action:'nextFinalQuestion'});return;}state.finalQuestionIndex++;startFinal();}
     // --- PEERJS: Host verwaltet Spielzustand, Einladungslink tritt automatisch bei ---
     let peer = null, conn = null, connections = new Map(), myPlayerId = 'p1', currentScreen = 'lobby';
     const roomStatus = msg => { document.getElementById('connection-status').textContent = msg; };
@@ -1822,7 +1909,7 @@
     function createOnlineRoom() {
       if (!window.Peer) return alert('PeerJS konnte nicht geladen werden. Bitte Internetverbindung prüfen.');
       if (peer) peer.destroy(); connections.clear();
-      state.roomId = Math.random().toString(36).slice(2,10); state.isHost = true; state.onlineMode = true; myPlayerId = 'p1';
+      state.roomId = Math.random().toString(36).slice(2,10); state.isHost = true; state.onlineMode = true; myPlayerId = 'p1'; state.leaderId='p1';
       peer = new Peer('ddf-'+state.roomId);
       roomStatus('Raum wird erstellt ...');
       peer.on('open', () => { roomStatus('Raum bereit. Kopiere den Einladungslink!'); document.getElementById('room-code-label').textContent = roomLink(); });
@@ -1848,6 +1935,10 @@
           } else if(data.type==='ANSWER' && currentScreen==='game' && state.players[state.activePlayerTurnIndex]?.id===player.id) {
             document.getElementById('player-answer-input').value=String(data.answer||'').slice(0,500);submitPlayerAnswer();
           } else if(data.type==='VOTE' && currentScreen==='voting') recordVote(player.id,data.target);
+          else if(data.type==='FINAL_ANSWER' && currentScreen==='final') recordFinalAnswer(player.id,data.answer);
+          else if(data.type==='LEADER_ACTION' && player.id===state.leaderId && ['startMatch','forceEndVoting','nextRoundOrGame','returnToLobby','restartMatchSameChars','startVotingPhase','togglePauseGame','revealFinal','nextFinalQuestion'].includes(data.action)) { if(data.action==='revealFinal')revealFinal();else window[data.action](); }
+          else if(data.type==='LEADER_SETTINGS' && player.id===state.leaderId && currentScreen==='lobby') {state.matchTimeMinutes=Math.min(5,Math.max(1,+data.matchTimeMinutes||2));state.timerSeconds=Math.min(60,Math.max(3,+data.timerSeconds||20));state.startLives=Math.min(10,Math.max(1,+data.startLives||3));state.teamsMode=['off','2','3','4','5'].includes(data.teamsMode)?data.teamsMode:'off';state.answerCapture=!!data.answerCapture;broadcastState();}
+          else if(data.type==='LEADER_MANAGE' && player.id===state.leaderId && currentScreen==='lobby') {if(data.action==='kick')kickPlayer(data.target,true);if(data.action==='promote')promotePlayer(data.target,true);}
         });
         c.on('close',()=>{connections.delete(c.peer);roomStatus('Ein Mitspieler hat die Verbindung getrennt.');});
         c.on('error',()=>connections.delete(c.peer));
@@ -1866,6 +1957,7 @@
         conn.on('data',data=>{
           if(data.type==='WELCOME') {myPlayerId=data.playerId;roomStatus('Erfolgreich beigetreten!');}
           if(data.type==='ERROR')alert(data.message);
+          if(data.type==='KICKED'){alert('Du wurdest aus der Lobby entfernt.');location.href=location.pathname;return;}
           if(data.type==='SYNC') applyHostState(data);
         });
         conn.on('close',()=>roomStatus('Verbindung zum Anführer getrennt. Bitte Link erneut öffnen.'));
@@ -1877,8 +1969,8 @@
     function sendMyProfile() { if(state.onlineMode&&!state.isHost) { const p=state.players.find(p=>p.id===myPlayerId);if(p)sendHost({type:'PROFILE',name:p.name,avatarIndex:p.avatarIndex,team:p.team}); }else broadcastState(); }
     function broadcastState() {
       if(!state.onlineMode||!state.isHost)return;
-      currentScreen=['lobby','game','voting','result'].find(x=>!document.getElementById('screen-'+x).classList.contains('hidden'))||'lobby';
-      const {matchTimerInterval,questionTimerInterval,votingTimerInterval,isAdminLoggedIn,...safe}=state;
+      currentScreen=['lobby','game','voting','result','final'].find(x=>!document.getElementById('screen-'+x).classList.contains('hidden'))||'lobby';
+      const {matchTimerInterval,questionTimerInterval,votingTimerInterval,finalTimerInterval,isAdminLoggedIn,...safe}=state;
       // No solutions or admin password are sent; each player receives only the public game state.
       const packet={type:'SYNC',screen:currentScreen,state:safe};
       connections.forEach(c=>{if(c.open)c.send(packet);});
@@ -1896,7 +1988,7 @@
         document.getElementById('game-current-player-name').textContent=p?.name||'';
         document.getElementById('active-player-title').textContent=(p?.name||'')+' ist am Zug';
         document.getElementById('game-active-avatar-img').src=(defaultAvatars[p?.avatarIndex]||defaultAvatars[0]).img;
-        document.getElementById('game-question-text').textContent=q?.text||'';
+        document.getElementById('game-question-text').textContent=q?.text||'';document.getElementById('answer-controls').classList.toggle('hidden',!state.answerCapture);
         document.getElementById('game-round-badge').textContent=`Durchgang ${state.currentRound} - Frage ${state.currentQuestionIndex+1}`;
         document.getElementById('match-total-timer-display').textContent=formatTime(state.matchTimeRemaining);
         document.getElementById('game-timer-display').textContent=state.questionTimeRemaining;
@@ -1904,14 +1996,23 @@
         document.getElementById('mic-btn').disabled=!mine;
         if(old.currentQuestionIndex!==state.currentQuestionIndex)document.getElementById('player-answer-input').value='';
       }
+      if(packet.screen==='final') renderFinal();
       if(packet.screen==='voting') {renderVotingCards();document.getElementById('voting-timer-display').textContent=formatTime(state.votingTimeRemaining);}
       if(packet.screen==='result') {
         const box=document.getElementById('result-summary-box');box.innerHTML='';
         state.players.forEach(p=>{const el=document.createElement('div');el.className='p-3 bg-slate-900 rounded-xl';el.textContent=p.name+' – '+ '❤️'.repeat(p.lives);box.appendChild(el);});
       }
-      document.getElementById('host-top-controls').classList.toggle('hidden',true);
-      document.getElementById('leader-options-box').classList.toggle('hidden',true);
-      document.querySelectorAll('[onclick="startMatch()"],[onclick="forceEndVoting()"],[onclick="startVotingPhase()"],[onclick="nextRoundOrGame()"],[onclick="togglePauseGame()"],[onclick="addHumanPlayer()"],[onclick="addBotPlayer()"],[onclick="returnToLobby()"],[onclick="openAdminModal()"],[onclick="createOnlineRoom()"],[onclick="joinOnlineRoom()"],[onclick="copyInviteLink()"],[onclick="restartMatchSameChars()"]').forEach(el=>el.classList.add('hidden'));
+      document.getElementById('host-top-controls').classList.toggle('hidden',!amLeader());
+      document.getElementById('leader-options-box').classList.toggle('hidden',!amLeader());
+      document.getElementById('answer-capture-select').value=state.answerCapture?'on':'off';
+      document.getElementById('leader-matchtime-select').value=state.matchTimeMinutes;
+      document.getElementById('leader-timer-select').value=state.timerSeconds;
+      document.getElementById('leader-lives-select').value=state.startLives;
+      document.getElementById('leader-teams-select').value=state.teamsMode;
+      document.getElementById('answer-controls').classList.toggle('hidden',!state.answerCapture);
+      renderLobbyPlayers();refreshLeaderUI();
+      document.getElementById('leader-options-box').classList.toggle('hidden',!amLeader());
+      document.querySelectorAll('[onclick="startMatch()"],[onclick="forceEndVoting()"],[onclick="startVotingPhase()"],[onclick="nextRoundOrGame()"],[onclick="togglePauseGame()"],[onclick="addHumanPlayer()"],[onclick="addBotPlayer()"],[onclick="returnToLobby()"],[onclick="openAdminModal()"],[onclick="createOnlineRoom()"],[onclick="joinOnlineRoom()"],[onclick="copyInviteLink()"],[onclick="restartMatchSameChars()"]').forEach(el=>el.classList.toggle('hidden',!amLeader()));
     }
     function formatTime(s) {s=Math.max(0,s||0);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
     function copyInviteLink() {
@@ -1919,7 +2020,7 @@
       const link=roomLink();navigator.clipboard.writeText(link).then(()=>alert('Einladungslink kopiert!')).catch(()=>prompt('Link kopieren:',link));
     }
     // --- ADMIN LOGIK ---
-    function openAdminModal() { if(state.onlineMode&&!state.isHost)return; document.getElementById('admin-modal').classList.remove('hidden'); }
+    function openAdminModal() { if(state.onlineMode&&!amLeader())return; document.getElementById('admin-modal').classList.remove('hidden'); }
     function closeAdminModal() { document.getElementById('admin-modal').classList.add('hidden'); }
     function checkAdminPassword() { if (document.getElementById('admin-password-input').value === 'minati') { state.isAdminLoggedIn = true; document.getElementById('admin-login-box').classList.add('hidden'); document.getElementById('admin-dashboard').classList.remove('hidden'); } else alert('Falsches Passwort!'); }
     function switchAdminTab(tab) { ['avatars', 'questions', 'settings'].forEach(t => { document.getElementById('admin-tab-' + t).classList.add('hidden'); document.getElementById('tab-btn-' + t).className = 'pb-3 text-sm font-bold text-slate-400 hover:text-white transition cursor-pointer'; }); document.getElementById('admin-tab-' + tab).classList.remove('hidden'); document.getElementById('tab-btn-' + tab).className = 'pb-3 text-sm font-bold text-amber-400 border-b-2 border-amber-400 transition cursor-pointer'; }
@@ -1952,7 +2053,8 @@
     }
     function deleteAdminQuestion(idx) { defaultQuestions.splice(idx, 1); saveLocalStorageData(); renderAdminQuestions(); }
     
-    function saveAdminSettings() { 
+    function saveAdminSettings() {
+      if(!amLeader())return; 
       state.matchTimeMinutes = parseInt(document.getElementById('admin-matchtime-input').value) || 2;
       state.timerSeconds = parseInt(document.getElementById('admin-timer-input').value) || 15; 
       state.votingSeconds = parseInt(document.getElementById('admin-voting-input').value) || 120; 
