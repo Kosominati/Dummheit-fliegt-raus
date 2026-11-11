@@ -26,6 +26,7 @@
     @keyframes pulse-slow { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     .animate-pulse-slow { animation: 3s cubic-bezier(0.4, 0, 0.6, 1) infinite pulse-slow; }
   </style>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-full flex flex-col antialiased selection:bg-rose-500 selection:text-white">
 
@@ -1765,9 +1766,100 @@
     function nextRoundOrGame() { state.currentRound++; state.currentAnswers = {}; state.votes = {}; startMatch(); }
     function returnToLobby() { clearInterval(state.matchTimerInterval); clearInterval(state.questionTimerInterval); clearInterval(state.votingTimerInterval); switchScreen('lobby'); }
     function restartMatchSameChars() { state.players.forEach(p => { p.lives = state.startLives; p.skippedNext = false; }); state.currentRound = 1; startMatch(); }
-    function copyInviteLink() { alert('Online-Multiplayer erfordert Firebase-Setup im Code. (Aktuell lokaler Modus)'); }
-    function createOnlineRoom() { alert('Online-Multiplayer Modul nicht konfiguriert.'); }
-    function joinOnlineRoom() { alert('Online-Multiplayer Modul nicht konfiguriert.'); }
+    // --- ECHTER ONLINE-MULTIPLAYER (PEERJS OHNE FIREBASE) ---
+    let peer = null;
+    let conn = null;
+    let isHostOnline = false;
+
+    function createOnlineRoom() {
+      // Zufälligen 4-stelligen Raumcode generieren
+      const roomId = Math.floor(1000 + Math.random() * 9000).toString();
+      state.roomId = roomId;
+      state.isHost = true;
+      isHostOnline = true;
+
+      // PeerJS initialisieren (nutzt einen öffentlichen kostenlosen Server)
+      peer = new Peer('ddf-' + roomId);
+
+      peer.on('open', (id) => {
+        alert(`Dein Online-Raum wurde erstellt!\nRaumcode: ${roomId}\nGib diesen Code deiner Frau, damit sie beitreten kann.`);
+        document.getElementById('online-room-display').textContent = `Raum-ID: ${roomId} (Warte auf Mitspieler...)`;
+      });
+
+      peer.on('connection', (incomingConn) => {
+        conn = incomingConn;
+        setupConnectionEvents();
+        alert('Ein Mitspieler ist dem Raum beigetreten!');
+        document.getElementById('online-room-display').textContent = `Raum-ID: ${roomId} (Verbunden!)`;
+        
+        // Aktuellen Spielzustand an den Mitspieler senden
+        setTimeout(() => sendStateToPeer(), 1000);
+      });
+
+      peer.on('error', (err) => {
+        alert('Fehler beim Erstellen des Raums: ' + err.type);
+      });
+    }
+
+    function joinOnlineRoom() {
+      const roomId = prompt('Bitte gib den 4-stelligen Raumcode des Hosts ein:');
+      if (!roomId) return;
+      
+      state.roomId = roomId.trim();
+      state.isHost = false;
+      isHostOnline = false;
+
+      peer = new Peer();
+
+      peer.on('open', (id) => {
+        conn = peer.connect('ddf-' + state.roomId);
+        setupConnectionEvents();
+      });
+
+      peer.on('error', (err) => {
+        alert('Konnte Raum nicht finden. Ist der Host online? Fehler: ' + err.type);
+      });
+    }
+
+    function setupConnectionEvents() {
+      if (!conn) return;
+
+      conn.on('open', () => {
+        console.log('Verbunden mit anderem Spieler!');
+        if (!state.isHost) {
+          alert('Erfolgreich mit dem Raum verbunden!');
+        }
+      });
+
+      conn.on('data', (data) => {
+        // Empfangene Daten vom anderen Spieler verarbeiten
+        if (data.type === 'STATE_UPDATE') {
+          state = data.state;
+          // UI je nachaktuellem Screen aktualisieren
+          if (document.getElementById('screen-lobby').classList.contains('hidden') === false) {
+            renderLobbyPlayers();
+            renderLobbyAvatars();
+          }
+        } else if (data.type === 'ANSWER_SUBMITTED') {
+          state.currentAnswers[data.playerId] = data.answerData;
+        }
+      });
+    }
+
+    function sendStateToPeer() {
+      if (conn && conn.open) {
+        conn.send({ type: 'STATE_UPDATE', state: state });
+      }
+    }
+
+    function copyInviteLink() {
+      if (!state.roomId) {
+        alert('Erstelle zuerst einen Online-Raum!');
+        return;
+      }
+      navigator.clipboard.writeText(state.roomId);
+      alert('Raumcode "' + state.roomId + '" in die Zwischenablage kopiert!');
+    }
 
     // --- ADMIN LOGIK ---
     function openAdminModal() { document.getElementById('admin-modal').classList.remove('hidden'); }
