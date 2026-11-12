@@ -142,6 +142,12 @@
             </select>
           </div>
           <div>
+            <label class="block text-xs text-slate-300 mb-1">Finalzeit</label>
+            <select id="leader-finaltime-select" onchange="updateLeaderSettings()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-semibold">
+              <option value="10">10 Sekunden</option><option value="15" selected>15 Sekunden</option><option value="20">20 Sekunden</option><option value="30">30 Sekunden</option><option value="45">45 Sekunden</option><option value="60">60 Sekunden</option>
+            </select>
+          </div>
+          <div>
             <label class="block text-xs text-slate-300 mb-1">Start-Leben</label>
             <select id="leader-lives-select" onchange="updateLeaderSettings()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-semibold">
               <option value="1">1 Herz</option>
@@ -269,7 +275,7 @@
       </div>
     </div>
 
-    <div id="screen-final" class="w-full max-w-3xl glass rounded-3xl p-6 hidden text-center space-y-5"><h2 class="text-3xl font-extrabold text-amber-400">🏆 Das große 1 gegen 1</h2><p id="final-players" class="text-lg font-bold"></p><p id="final-question" class="text-2xl font-bold p-5 bg-slate-900 rounded-xl"></p><p class="text-rose-300 font-bold">⏳ <span id="final-countdown">15</span> Sekunden</p><div id="final-entry" class="flex gap-2"><input id="final-answer-input" type="number" step="any" placeholder="Deine Schätzung als Zahl" class="flex-1 min-w-0 bg-slate-950 border border-slate-700 rounded-xl px-3 py-3"><button onclick="submitFinalAnswer()" class="px-4 py-2 bg-emerald-600 rounded-xl font-bold">Abgeben</button></div><button id="final-reveal-btn" onclick="revealFinal()" class="px-5 py-3 bg-amber-600 rounded-xl font-bold">Ergebnis anzeigen</button><div id="final-outcome" class="text-lg font-bold"></div><button id="final-next-btn" onclick="nextFinalQuestion()" class="hidden px-5 py-3 bg-indigo-600 rounded-xl font-bold">Nächste Schätzfrage</button></div>
+    <div id="screen-final" class="w-full max-w-3xl glass rounded-3xl p-6 hidden text-center space-y-5"><h2 class="text-3xl font-extrabold text-amber-400">🏆 Das große Finale – Team gegen Team</h2><p id="final-players" class="text-lg font-bold"></p><p id="final-unit" class="text-sm font-bold text-emerald-300"></p><p id="final-question" class="text-2xl font-bold p-5 bg-slate-900 rounded-xl"></p><p class="text-rose-300 font-bold">⏳ <span id="final-countdown">15</span> Sekunden</p><div id="final-entry" class="flex gap-2"><input id="final-answer-input" type="number" step="any" placeholder="Deine Schätzung als Zahl" class="flex-1 min-w-0 bg-slate-950 border border-slate-700 rounded-xl px-3 py-3"><button onclick="submitFinalAnswer()" class="px-4 py-2 bg-emerald-600 rounded-xl font-bold">Abgeben</button></div><button id="final-reveal-btn" onclick="revealFinal()" class="px-5 py-3 bg-amber-600 rounded-xl font-bold">Ergebnis anzeigen</button><div id="final-outcome" class="text-lg font-bold"></div><button id="final-next-btn" onclick="nextFinalQuestion()" class="hidden px-5 py-3 bg-indigo-600 rounded-xl font-bold">Nächste Schätzfrage</button></div>
     <!-- SCREEN 4: Runden-Ergebnis, Herzverlust & Aussetzen-Einstellung nach jedem Ablauf -->
     <div id="screen-result" class="w-full max-w-3xl glass rounded-3xl p-5 md:p-8 shadow-2xl hidden text-center">
       <span class="px-3 py-1 bg-amber-500/20 text-amber-400 rounded-full text-xs font-bold uppercase tracking-wider">Durchgang beendet – Auswertung</span>
@@ -1538,7 +1544,7 @@
       isHost: true,
       roomId: null,
       onlineMode: false,
-      leaderId: 'p1', answerCapture: true, finalQuestionIndex: 0, finalAnswers: {}, finalSeconds: 15, finalRevealed: false, finalWinner: null
+      leaderId: 'p1', answerCapture: true, finalQuestionIndex: 0, finalAnswers: {}, finalSeconds: 15, finalTimeSetting: 15, finalRevealed: false, finalWinner: null, questionDeck: [], finalDeck: [], answerHistory: [], teamLives: {}, finalWinnerName: null
     };
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -1659,7 +1665,7 @@
         const av = defaultAvatars[p.avatarIndex] || defaultAvatars[0];
         const card = document.createElement('div');
         card.className = `flex items-center gap-2 p-2 rounded-xl border cursor-pointer transition ${idx === state.activeEditingPlayerIndex ? 'bg-amber-500/20 border-amber-500/50' : 'bg-slate-900 border-slate-700 hover:border-amber-500/30'}`;
-        card.innerHTML = `<div class="relative">${p.id===state.leaderId?'<span class="absolute -top-4 left-2 text-lg">👑</span>':''}<img src="${av.img}" class="w-8 h-8 rounded-lg object-cover"></div><div class="text-left"><p class="text-xs font-bold text-white leading-tight">${esc(p.name)}</p><p class="text-[9px] text-slate-400">${p.isBot ? 'Bot' : 'Spieler'}</p></div>${amLeader() && p.id!==state.leaderId ? `<div class="flex flex-col gap-1 ml-2"><button class="text-[10px] text-amber-300" onclick="event.stopPropagation();promotePlayer('${p.id}')">👑 Ernennen</button><button class="text-[10px] text-rose-300" onclick="event.stopPropagation();kickPlayer('${p.id}')">✕ Entfernen</button></div>`:''}`;
+        card.innerHTML = `<div class="relative">${p.id===state.leaderId?'<span class="absolute -top-4 left-2 text-lg">👑</span>':''}<img src="${av.img}" style="${teamStyle(p)}" class="w-8 h-8 rounded-lg object-cover"></div><div class="text-left"><p class="text-xs font-bold text-white leading-tight">${esc(p.name)}</p><p class="text-[9px] text-slate-400">${teamMode()?esc(teamLabel(p.team))+' · ':''}${p.isBot ? 'Bot' : 'Spieler'}</p></div>${amLeader() && p.id!==state.leaderId ? `<div class="flex flex-col gap-1 ml-2"><button class="text-[10px] text-amber-300" onclick="event.stopPropagation();promotePlayer('${p.id}')">👑 Ernennen</button><button class="text-[10px] text-rose-300" onclick="event.stopPropagation();kickPlayer('${p.id}')">✕ Entfernen</button></div>`:''}`;
         card.onclick = () => { if (state.onlineMode && !state.isHost && p.id !== myPlayerId) return; state.activeEditingPlayerIndex = idx; updatePreviewCard(); renderLobbyPlayers(); };
         grid.appendChild(card);
       });
@@ -1681,14 +1687,16 @@
     function resetPlayerName() { const p = state.players[state.activeEditingPlayerIndex]; if (!p || (state.onlineMode && !state.isHost && p.id !== myPlayerId)) return; p.name = defaultAvatars[p.avatarIndex].name; document.getElementById('player-name-input').value = p.name; renderLobbyPlayers(); sendMyProfile(); }
     function updateLeaderSettings() {
       if (!amLeader()) return;
-      if (state.onlineMode && !state.isHost) {sendHost({type:'LEADER_SETTINGS',matchTimeMinutes:+document.getElementById('leader-matchtime-select').value,timerSeconds:+document.getElementById('leader-timer-select').value,startLives:+document.getElementById('leader-lives-select').value,teamsMode:document.getElementById('leader-teams-select').value,answerCapture:document.getElementById('answer-capture-select').value==='on'});return;}
+      if (state.onlineMode && !state.isHost) {sendHost({type:'LEADER_SETTINGS',matchTimeMinutes:+document.getElementById('leader-matchtime-select').value,timerSeconds:+document.getElementById('leader-timer-select').value,startLives:+document.getElementById('leader-lives-select').value,teamsMode:document.getElementById('leader-teams-select').value,answerCapture:document.getElementById('answer-capture-select').value==='on',finalTimeSetting:+document.getElementById('leader-finaltime-select').value});return;}
       state.answerCapture=document.getElementById('answer-capture-select').value==='on';
       state.matchTimeMinutes = parseInt(document.getElementById('leader-matchtime-select').value) || 2;
       state.timerSeconds = parseInt(document.getElementById('leader-timer-select').value) || 15;
       state.startLives = parseInt(document.getElementById('leader-lives-select').value) || 3;
       state.teamsMode = document.getElementById('leader-teams-select').value;
+      state.finalTimeSetting = +document.getElementById('leader-finaltime-select').value || 15;
+      resetTeamLives();
       updateTeamSelector();
-      state.players.forEach(p => { p.lives = state.startLives; p.maxLives = state.startLives; });
+      state.players.forEach(p => { p.lives = state.startLives; p.maxLives = state.startLives; });syncTeamLives();renderLobbyPlayers();
       broadcastState();
     }
 
@@ -1704,14 +1712,53 @@
     function chooseMyTeam(team) {
       const p=state.players[state.activeEditingPlayerIndex];
       if(!p || (state.onlineMode&&!state.isHost&&p.id!==myPlayerId))return;
-      p.team=team;updatePreviewCard();sendMyProfile();
+      p.team=team;syncTeamLives();updatePreviewCard();renderLobbyPlayers();sendMyProfile();
+    }
+    // Teamleben, zufällige Fragen und gemeinsame Teamstimmen (nur Spielzustand, kein Layout-Umbau).
+    const teamColors={rot:'#ef4444',blau:'#3b82f6',gruen:'#22c55e',gelb:'#eab308',lila:'#a855f7'};
+    function teamMode(){return state.teamsMode!=='off';}
+    function teamLabel(key){return key ? 'Team '+({rot:'Rot',blau:'Blau',gruen:'Grün',gelb:'Gelb',lila:'Lila'}[key]||key) : 'Ohne Team';}
+    function teamStyle(p){return teamMode()&&p.team ? 'border:3px solid '+(teamColors[p.team]||'#64748b')+';box-shadow:0 0 0 1px '+(teamColors[p.team]||'#64748b')+'55' : '';}
+    function aliveTeams(){return [...new Set(state.players.filter(p=>p.team && (state.teamLives[p.team]??0)>0).map(p=>p.team))];}
+    function eligiblePlayers(){return state.players.filter(p=>p.lives>0 && (!teamMode()||!!p.team));}
+    function syncTeamLives(){
+      if(!teamMode())return;
+      state.teamLives ||= {};
+      for(const p of state.players){if(!p.team)continue;if(state.teamLives[p.team]===undefined)state.teamLives[p.team]=state.startLives;p.lives=state.teamLives[p.team];p.maxLives=state.startLives;}
+    }
+    function resetTeamLives(){state.teamLives={};if(teamMode())for(const p of state.players){if(p.team)state.teamLives[p.team]=state.startLives;}syncTeamLives();}
+    function shuffledDeck(length){const a=Array.from({length},(_,i)=>i);for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+    function drawQuestion(final=false){const deckKey=final?'finalDeck':'questionDeck',len=final?finalQuestions.length:defaultQuestions.length;if(!len)return 0;if(!Array.isArray(state[deckKey]))state[deckKey]=[];if(!state[deckKey].length)state[deckKey]=shuffledDeck(len);return state[deckKey].pop();}
+    function currentQuestion(){return defaultQuestions[state.activeQuestionId??0]||defaultQuestions[0];}
+    function activeFinalSides(){return teamMode()?aliveTeams():eligiblePlayers().map(p=>p.id);}
+    function sideName(id){return teamMode()?teamLabel(id):(state.players.find(p=>p.id===id)?.name||id);}
+    function myFinalSide(){return teamMode()?state.players.find(p=>p.id===myPlayerId)?.team:myPlayerId;}
+    function finalUnit(q){
+      const a=q.answer||'';
+      const special=a.match(/(?:Trilliarden|Billionen|Milliarden|Mrd\.|Millionen|Mio\.)\s+[^,–-]*/i);
+      if(special)return special[0].trim();
+      const magnitude=a.match(/(?:Trilliarden|Billionen|Milliarden|Mrd\.|Millionen|Mio\.)/i);if(magnitude)return magnitude[0];
+      if(/Min\.|Minuten/i.test(a)&&/Sek\.|Sekunden/i.test(a))return 'Minuten (z. B. 8,33)';
+      const m=a.match(/(?:km²|km\/h|m\/s|km\/s|°C|kcal|kg|km|cm|mm|m²|m|g|l|Tonnen|Stunden|Minuten|Sekunden|Tage|Jahre|Monate|Herzen|Menschen|Eier)(?![a-zäöü])/i);
+      return m?m[0]:'Anzahl (ohne Einheit)';
+    }
+    function parseGermanNumber(token){return Number(String(token).replace(/\.(?=\d{3}(?:\D|$))/g,'').replace(',','.'));}
+    function targetFinalValue(q){
+      const a=q.answer||'';
+      const nums=(a.match(/\d[\d.,]*/g)||[]).map(parseGermanNumber).filter(Number.isFinite);
+      if(!nums.length)return NaN;
+      if(/Min\.|Minuten/i.test(a)&&/Sek\.|Sekunden/i.test(a))return nums[0]+(nums[1]||0)/60;
+      if(nums.length>=2 && /[–-]/.test(a))return (nums[0]+nums[1])/2;
+      return nums[0];
     }
     // --- SPIEL LOGIK ---
     function startMatch() {
-      if (state.onlineMode && !state.isHost) {if(amLeader())sendHost({type:'LEADER_ACTION',action:'startMatch'});return;}
-      if (state.players.filter(p=>p.lives>0&&!p.skippedNext).length===2) {startFinal();return;}
-      state.currentQuestionIndex = 0; state.activePlayerTurnIndex = Math.max(0,state.players.findIndex(p=>p.lives>0));
-      state.matchTimeRemaining = state.matchTimeMinutes * 60; state.currentAnswers = {}; state.votes = {}; state.ballots = {}; switchScreen('game'); startMatchTimer(); loadNextQuestionForActivePlayer(); broadcastState();
+      if(state.onlineMode&&!state.isHost){if(amLeader())sendHost({type:'LEADER_ACTION',action:'startMatch'});return;}
+      syncTeamLives();
+      if((teamMode()?(aliveTeams().length===2&&(state.currentRound>1||Object.values(state.teamLives).some(x=>x<state.startLives))):eligiblePlayers().length===2)){startFinal();return;}
+      if(teamMode()&&aliveTeams().length<2){alert('Bitte mindestens zwei Teams mit Spielern auswählen.');return;}
+      state.currentQuestionIndex=0;state.activeQuestionId=drawQuestion();state.activePlayerTurnIndex=Math.max(0,state.players.findIndex(p=>p.lives>0&&(!teamMode()||p.team)));
+      state.matchTimeRemaining=state.matchTimeMinutes*60;state.currentAnswers={};state.answerHistory=[];state.votes={};state.ballots={};switchScreen('game');startMatchTimer();loadNextQuestionForActivePlayer();broadcastState();
     }
     function startMatchTimer() {
       clearInterval(state.matchTimerInterval);
@@ -1726,7 +1773,7 @@
     }
     function loadNextQuestionForActivePlayer() {
       let loops = 0;
-      while ((state.players[state.activePlayerTurnIndex]?.skippedNext || state.players[state.activePlayerTurnIndex]?.lives<=0) && loops < state.players.length) {
+      while ((state.players[state.activePlayerTurnIndex]?.skippedNext || state.players[state.activePlayerTurnIndex]?.lives<=0 || (teamMode()&&!state.players[state.activePlayerTurnIndex]?.team)) && loops < state.players.length) {
         state.players[state.activePlayerTurnIndex].skippedNext = false; 
         state.activePlayerTurnIndex = (state.activePlayerTurnIndex + 1) % state.players.length;
         loops++;
@@ -1734,7 +1781,7 @@
       const p = state.players[state.activePlayerTurnIndex]; const av = defaultAvatars[p.avatarIndex];
       document.getElementById('game-current-player-name').textContent = p.name; document.getElementById('active-player-title').textContent = p.name + ' ist am Zug';
       document.getElementById('game-active-avatar-img').src = av.img; document.getElementById('game-round-badge').textContent = `Durchgang ${state.currentRound} - Frage ${state.currentQuestionIndex + 1}`;
-      const q = defaultQuestions[state.currentQuestionIndex % defaultQuestions.length];
+      const q = currentQuestion();
       document.getElementById('game-question-text').textContent = q.text; document.getElementById('player-answer-input').value = ''; document.getElementById('answer-controls').classList.toggle('hidden',!state.answerCapture);
       // Vorlesestimme entfernt; Mikrofoneingabe bleibt.
       broadcastState();
@@ -1758,8 +1805,9 @@
       }
       clearInterval(state.questionTimerInterval);
       const val = state.answerCapture ? (document.getElementById('player-answer-input').value.trim() || '(Keine Antwort)') : '(Mündlich beantwortet)';
-      state.currentAnswers[state.players[state.activePlayerTurnIndex].id] = { questionIndex: state.currentQuestionIndex, answer: val };
-      state.currentQuestionIndex++; state.activePlayerTurnIndex = (state.activePlayerTurnIndex + 1) % state.players.length;
+      state.currentAnswers[state.players[state.activePlayerTurnIndex].id] = { questionIndex: state.activeQuestionId, answer: val };
+      if(state.answerCapture)state.answerHistory.push({playerId:state.players[state.activePlayerTurnIndex].id,questionIndex:state.activeQuestionId,answer:val});
+      state.currentQuestionIndex++;if(state.matchTimeRemaining>0)state.activeQuestionId=drawQuestion(); state.activePlayerTurnIndex = (state.activePlayerTurnIndex + 1) % state.players.length;
       if (state.matchTimeRemaining <= 0) startVotingPhase(); else loadNextQuestionForActivePlayer();
       broadcastState();
     }
@@ -1775,15 +1823,20 @@
       renderVotingCards(); startVotingTimer(); broadcastState();
     }
     function renderVotingCards() {
-      const grid = document.getElementById('voting-answers-grid'); const openIds=new Set([...grid.querySelectorAll('details[open]')].map(el=>el.dataset.player)); grid.innerHTML = '';
-      state.players.forEach(p => {
-        const ansObj = state.currentAnswers[p.id] || {answer:'(Nicht teilgenommen)', questionIndex:0};
-        const q = defaultQuestions[(ansObj.questionIndex || 0) % defaultQuestions.length] || {text:'',answer:''};
-        const av = defaultAvatars[p.avatarIndex] || defaultAvatars[0];
-        const card = document.createElement('div'); card.className = 'glass rounded-2xl p-4 border border-slate-800 flex flex-col justify-between';
-        card.innerHTML = `<div><div class="flex items-center gap-3 mb-3"><img src="${av.img}" class="w-10 h-10 rounded-xl object-cover"><h4 class="font-bold">${esc(p.name)} ${'❤️'.repeat(Math.max(0,p.lives))}</h4></div><details data-player="${p.id}" ${openIds.has(p.id)?'open':''} class="mb-3 rounded-xl bg-slate-950 p-3"><summary class="cursor-pointer text-sm text-amber-300">Frage und Antwort anzeigen</summary><p class="mt-2 text-sm">${esc(q.text)}</p><p class="mt-2 text-rose-300 font-bold">${esc(ansObj.answer)}</p></details>${amLeader() ? `<details data-player="solution-${p.id}" ${openIds.has('solution-'+p.id)?'open':''} class="mb-3 rounded-xl bg-indigo-950/60 p-3"><summary class="cursor-pointer text-xs text-indigo-300">👑 Richtige Antwort (nur Anführer)</summary><p class="mt-2 text-sm">${esc(q.answer)}</p></details>` : ''}</div><div class="flex justify-between items-center"><span class="text-xs">Stimmen: <b id="vote-count-${esc(p.id)}">${state.votes[p.id]||0}</b></span><button onclick="addVoteForPlayer('${esc(p.id)}')" class="px-3 py-2 rounded-xl bg-rose-600/30 text-rose-300 text-xs font-bold">👎 Stimme</button></div>`;
+      const grid=document.getElementById('voting-answers-grid');
+      const openIds=new Set([...grid.querySelectorAll('details[open]')].map(el=>el.dataset.player));grid.innerHTML='';
+      const entries=teamMode()?aliveTeams().map(t=>({id:t,name:teamLabel(t),players:state.players.filter(p=>p.team===t)})):state.players.filter(p=>p.lives>0).map(p=>({id:p.id,name:p.name,players:[p]}));
+      const myTeam=state.players.find(p=>p.id===myPlayerId)?.team;
+      for(const entry of entries){
+        const card=document.createElement('div');card.className='glass rounded-2xl p-4 border border-slate-800 flex flex-col justify-between';
+        const heads=entry.players.map(p=>{const av=defaultAvatars[p.avatarIndex]||defaultAvatars[0];return `<div class="flex items-center gap-2"><img src="${av.img}" style="${teamStyle(p)}" class="w-10 h-10 rounded-xl object-cover"><span class="text-xs">${p.id===state.leaderId?'👑 ':''}${esc(p.name)}</span></div>`;}).join('');
+        const history=state.answerCapture?state.answerHistory.filter(a=>entry.players.some(p=>p.id===a.playerId)):[];
+        const answerRows=history.map((a,i)=>{const p=state.players.find(p=>p.id===a.playerId);const q=defaultQuestions[a.questionIndex]||{text:'',answer:''};const key=entry.id+'-'+i;return `<details data-player="${esc(key)}" ${openIds.has(key)?'open':''} class="mb-2 rounded-xl bg-slate-950 p-3"><summary class="cursor-pointer text-sm text-amber-300">${esc(p?.name||'')} – Frage ${i+1} anzeigen</summary><p class="mt-2 text-sm">${esc(q.text)}</p><p class="mt-2 text-rose-300 font-bold">${esc(a.answer)}</p></details>${amLeader()?`<details data-player="solution-${esc(key)}" ${openIds.has('solution-'+key)?'open':''} class="mb-2 rounded-xl bg-indigo-950/60 p-3"><summary class="cursor-pointer text-xs text-indigo-300">👑 Richtige Antwort</summary><p class="mt-2 text-sm">${esc(q.answer)}</p></details>`:''}`;}).join('');
+        const canVote=teamMode()?myTeam!==entry.id:myPlayerId!==entry.id;
+        const lives=teamMode()?(state.teamLives[entry.id]??state.startLives):entry.players[0].lives;
+        card.innerHTML=`<div><div class="flex items-center gap-3 mb-3 flex-wrap">${heads}</div><h4 class="font-bold mb-2" style="color:${teamColors[entry.id]||'inherit'}">${esc(entry.name)} ${'❤️'.repeat(Math.max(0,lives))}</h4>${state.answerCapture?(answerRows||'<p class="text-xs text-slate-400 mb-3">Keine gespeicherten Antworten</p>'):'<p class="text-xs text-slate-400 mb-3">Mündliche Runde – keine Fragen oder Antworten gespeichert.</p>'}</div><div class="flex justify-between items-center"><span class="text-xs">Stimmen: <b id="vote-count-${esc(entry.id)}">${state.votes[entry.id]||0}</b></span><button onclick="addVoteForPlayer('${esc(entry.id)}')" ${!canVote?'disabled':''} class="px-3 py-2 rounded-xl bg-rose-600/30 text-rose-300 text-xs font-bold ${!canVote?'opacity-40 cursor-not-allowed':''}">${canVote?'👎 Stimme':'Eigenes Team'}</button></div>`;
         grid.appendChild(card);
-      });
+      }
     }
     function startVotingTimer() { if(state.onlineMode&&!state.isHost)return;
       clearInterval(state.votingTimerInterval); state.votingTimeRemaining = state.votingSeconds; document.getElementById('voting-timer-display').textContent = `${Math.floor(state.votingTimeRemaining/60).toString().padStart(2,'0')}:${(state.votingTimeRemaining%60).toString().padStart(2,'0')}`;
@@ -1798,36 +1851,44 @@
       if (state.onlineMode && !state.isHost) { sendHost({type:'VOTE',target:pid}); return; }
       recordVote(myPlayerId || 'host', pid);
     }
-    function recordVote(voter, target) {
-      if (!state.players.some(p=>p.id===target) || state.ballots?.[voter] || voter===target) return;
-      state.ballots ||= {}; state.ballots[voter] = target;
-      state.votes[target] = (state.votes[target]||0)+1;
-      const count = document.getElementById('vote-count-'+target); if (count) count.textContent = state.votes[target];
-      broadcastState();
-      if (state.onlineMode && Object.keys(state.ballots).length >= state.players.filter(p=>!p.isBot).length) forceEndVoting();
+    function recordVote(voter,target){
+      state.ballots ||= {};
+      const p=state.players.find(p=>p.id===voter);
+      if(!p||p.lives<=0)return;
+      const key=teamMode()?p.team:voter;
+      const targets=teamMode()?aliveTeams():eligiblePlayers().map(x=>x.id);
+      if(!key||state.ballots[key]||key===target||!targets.includes(target))return;
+      state.ballots[key]=target;state.votes[target]=(state.votes[target]||0)+1;
+      renderVotingCards();broadcastState();
+      const voters=teamMode()?aliveTeams().length:eligiblePlayers().filter(x=>!x.isBot).length;
+      if(state.onlineMode&&Object.keys(state.ballots).length>=voters)forceEndVoting();
     }
-    function forceEndVoting() {
-      if (state.onlineMode && !state.isHost) {if(amLeader())sendHost({type:'LEADER_ACTION',action:'forceEndVoting'});return;}
+    function forceEndVoting(){
+      if(state.onlineMode&&!state.isHost){if(amLeader())sendHost({type:'LEADER_ACTION',action:'forceEndVoting'});return;}
       if(currentScreen==='result')return;
-      clearInterval(state.votingTimerInterval); switchScreen('result');
-      const maxVotes = Math.max(0,...Object.values(state.votes));
-      const tied = state.players.filter(p=>p.lives>0 && (state.votes[p.id]||0)===maxVotes);
-      // Bei Gleichstand verliert niemand ein Herz: niemals mehrere Verlierer.
-      const loserIds = maxVotes>0 && tied.length===1 ? [tied[0].id] : [];
-      const summaryBox = document.getElementById('result-summary-box'); summaryBox.innerHTML = '';
-      state.players.forEach(p => {
-        const isLoser = loserIds.includes(p.id) && maxVotes > 0; if (isLoser) p.lives = Math.max(0, p.lives - 1);
-        const row = document.createElement('div'); row.className = `flex items-center justify-between p-3 rounded-xl border mb-2 ${isLoser ? 'bg-rose-500/10 border-rose-500/40' : 'bg-slate-900 border-slate-800'}`;
-        row.innerHTML = `<div class="flex items-center gap-2"><span class="text-xs font-bold text-white">${p.name}</span>${isLoser ? '<span class="text-[10px] bg-rose-500 text-white px-1.5 py-0.5 rounded font-bold">-1 Leben!</span>' : ''}</div><div class="flex items-center gap-3"><span class="text-xs text-slate-400">Leben: ${'❤️'.repeat(p.lives)}${'🖤'.repeat(p.maxLives - p.lives)}</span><label class="flex items-center gap-1 text-[10px] text-amber-400 cursor-pointer"><input type="checkbox" onchange="toggleSkip('${p.id}', this.checked)" ${p.skippedNext ? 'checked' : ''}> Aussetzen</label></div>`;
-        summaryBox.appendChild(row);
-      });
-      document.getElementById('result-headline').textContent = loserIds.length ? 'Das Urteil ist gefallen!' : (maxVotes ? 'Gleichstand – niemand verliert ein Herz!' : 'Niemand hat Stimmen erhalten!');
-      broadcastState();
+      clearInterval(state.votingTimerInterval);switchScreen('result');
+      const maxVotes=Math.max(0,...Object.values(state.votes));
+      const candidates=teamMode()?aliveTeams():eligiblePlayers().map(p=>p.id);
+      const tied=candidates.filter(id=>(state.votes[id]||0)===maxVotes);
+      const loser=maxVotes>0&&tied.length===1?tied[0]:null;
+      const box=document.getElementById('result-summary-box');box.innerHTML='';
+      if(teamMode()){
+        if(loser)state.teamLives[loser]=Math.max(0,(state.teamLives[loser]||0)-1);
+        syncTeamLives();
+        for(const t of [...new Set(state.players.map(p=>p.team).filter(Boolean))]){
+          const isLoser=t===loser,lives=state.teamLives[t]||0;
+          const row=document.createElement('div');row.className=`flex items-center justify-between p-3 rounded-xl border mb-2 ${isLoser?'bg-rose-500/10 border-rose-500/40':'bg-slate-900 border-slate-800'}`;
+          row.innerHTML=`<span class="text-xs font-bold" style="color:${teamColors[t]}">${esc(teamLabel(t))} ${isLoser?'– 1 Herz verloren!':''}</span><span>${'❤️'.repeat(lives)}${'🖤'.repeat(state.startLives-lives)}</span>`;box.appendChild(row);
+        }
+      }else{
+        for(const p of state.players){const isLoser=p.id===loser;if(isLoser)p.lives=Math.max(0,p.lives-1);const row=document.createElement('div');row.className='flex items-center justify-between p-3 rounded-xl border mb-2 bg-slate-900 border-slate-800';row.innerHTML=`<span class="text-xs font-bold">${esc(p.name)} ${isLoser?'– 1 Herz verloren!':''}</span><span>${'❤️'.repeat(p.lives)}${'🖤'.repeat(p.maxLives-p.lives)}</span>`;box.appendChild(row);}
+      }
+      document.getElementById('result-headline').textContent=loser?'Das Urteil ist gefallen!':(maxVotes?'Gleichstand – niemand verliert ein Herz!':'Niemand hat Stimmen erhalten!');broadcastState();
     }
     function toggleSkip(pid, checked) { if (state.onlineMode && !state.isHost) return; const p = state.players.find(x => x.id === pid); if(p) p.skippedNext = checked; broadcastState(); }
-    function nextRoundOrGame() { if (state.onlineMode && !state.isHost) {if(amLeader())sendHost({type:'LEADER_ACTION',action:'nextRoundOrGame'});return;} state.currentRound++; state.currentAnswers = {}; state.votes = {}; if(state.players.filter(p=>p.lives>0).length===2) startFinal(); else startMatch(); }
+    function nextRoundOrGame() { if (state.onlineMode && !state.isHost) {if(amLeader())sendHost({type:'LEADER_ACTION',action:'nextRoundOrGame'});return;} state.currentRound++; state.currentAnswers = {}; state.votes = {}; if((teamMode()?(aliveTeams().length===2&&(Object.values(state.teamLives).some(x=>x<state.startLives)||state.teamsMode!=='2')):eligiblePlayers().length===2)) startFinal(); else startMatch(); }
     function returnToLobby() { if (state.onlineMode && !state.isHost) {if(amLeader())sendHost({type:'LEADER_ACTION',action:'returnToLobby'});return;} clearInterval(state.matchTimerInterval); clearInterval(state.questionTimerInterval); clearInterval(state.votingTimerInterval); switchScreen('lobby'); broadcastState(); }
-    function restartMatchSameChars() { if (state.onlineMode && !state.isHost) {if(amLeader())sendHost({type:'LEADER_ACTION',action:'restartMatchSameChars'});return;} state.players.forEach(p => { p.lives = state.startLives; p.skippedNext = false; }); state.currentRound = 1; startMatch(); }
+    function restartMatchSameChars() { if (state.onlineMode && !state.isHost) {if(amLeader())sendHost({type:'LEADER_ACTION',action:'restartMatchSameChars'});return;} state.players.forEach(p => { p.lives = state.startLives; p.skippedNext = false; });resetTeamLives();state.questionDeck=[];state.finalDeck=[]; state.currentRound = 1; startMatch(); }
     function amLeader(){return !state.onlineMode || myPlayerId===state.leaderId;}
     function refreshLeaderUI(){
       const leader=amLeader();
@@ -1852,20 +1913,22 @@
     function startFinal(){
       if(state.onlineMode&&!state.isHost)return;
       clearInterval(state.matchTimerInterval);clearInterval(state.questionTimerInterval);clearInterval(state.votingTimerInterval);
-      state.finalAnswers={};state.finalRevealed=false;state.finalWinner=null;state.finalSeconds=15;document.getElementById('final-answer-input').value='';
-      state.finalQuestionIndex=(state.finalQuestionIndex||0)%finalQuestions.length;
-      switchScreen('final');renderFinal();broadcastState();
-      clearInterval(state.finalTimerInterval);
+      state.finalAnswers={};state.finalRevealed=false;state.finalWinner=null;state.finalWinnerName=null;state.finalSeconds=state.finalTimeSetting||15;
+      state.finalQuestionIndex=drawQuestion(true);
+      document.getElementById('final-answer-input').value='';document.getElementById('final-answer-input').disabled=false;
+      switchScreen('final');renderFinal();broadcastState();clearInterval(state.finalTimerInterval);
       state.finalTimerInterval=setInterval(()=>{if(state.finalRevealed)return;state.finalSeconds--;renderFinal();broadcastState();if(state.finalSeconds<=0)revealFinal();},1000);
     }
     function recordFinalAnswer(id,value){
-      if(state.finalRevealed || currentScreen!=='final'||state.finalSeconds<=0)return;
-      if(!state.players.some(p=>p.id===id&&p.lives>0))return;
-      if(Object.hasOwn(state.finalAnswers,id))return;
+      if(state.finalRevealed||currentScreen!=='final'||state.finalSeconds<=0)return;
+      const player=state.players.find(p=>p.id===id&&p.lives>0);
+      if(!player)return;
+      const side=teamMode()?player.team:id;
+      if(!side||!activeFinalSides().includes(side)||Object.hasOwn(state.finalAnswers,side))return;
       const n=Number(String(value).replace(',','.'));
       if(!Number.isFinite(n)||String(value).trim()==='')return;
-      state.finalAnswers[id]=n;renderFinal();broadcastState();
-      if(state.players.filter(p=>p.lives>0).every(p=>Object.hasOwn(state.finalAnswers,p.id)))revealFinal();
+      state.finalAnswers[side]=n;renderFinal();broadcastState();
+      if(activeFinalSides().every(x=>Object.hasOwn(state.finalAnswers,x)))revealFinal();
     }
     function submitFinalAnswer(){
       const el=document.getElementById('final-answer-input');
@@ -1876,32 +1939,31 @@
       if(state.onlineMode&&!state.isHost){if(amLeader())sendHost({type:'LEADER_ACTION',action:'revealFinal'});return;}
       if(state.finalRevealed)return;
       clearInterval(state.finalTimerInterval);state.finalSeconds=0;state.finalRevealed=true;
-      const q=finalQuestions[state.finalQuestionIndex%finalQuestions.length];
-      // Finale verwendet die hinterlegten Antworten; bei Spannweiten gilt der Mittelpunkt.
-      const nums=(q.answer.match(/\d[\d.,]*/g)||[]).map(t=>Number(t.replace(/\.(?=\d{3}(?:\D|$))/g,'').replace(',','.'))).filter(Number.isFinite);
-      let target=nums.length===2 ? (/Min\.|Minuten/i.test(q.answer)&&/Sek\.|Sekunden/i.test(q.answer)?nums[0]+nums[1]/60:(nums[0]+nums[1])/2) : nums[0];
-      // Zahlen werden in der in der Musterlösung verwendeten Einheit eingegeben (z.B. 5,97 Trilliarden -> 5,97).
-      const contestants=state.players.filter(p=>p.lives>0);
-      const ranked=contestants.map(p=>({p,value:state.finalAnswers[p.id],dist:Object.hasOwn(state.finalAnswers,p.id)?Math.abs(state.finalAnswers[p.id]-target):Infinity})).sort((a,b)=>a.dist-b.dist);
-      state.finalWinner=ranked[0].dist<ranked[1].dist?ranked[0].p.id:null;
+      const q=finalQuestions[state.finalQuestionIndex],target=targetFinalValue(q);
+      const ranked=activeFinalSides().map(id=>({id,value:state.finalAnswers[id],dist:Object.hasOwn(state.finalAnswers,id)?Math.abs(state.finalAnswers[id]-target):Infinity})).sort((a,b)=>a.dist-b.dist);
+      state.finalWinner=ranked.length===2&&ranked[0].dist<ranked[1].dist?ranked[0].id:null;
+      state.finalWinnerName=state.finalWinner?sideName(state.finalWinner):null;
       renderFinal();broadcastState();
     }
     function renderFinal(){
-      const q=finalQuestions[state.finalQuestionIndex%finalQuestions.length];
-      const ps=state.players.filter(p=>p.lives>0);
-      document.getElementById('final-players').textContent=ps.map(p=>(p.id===state.leaderId?'👑 ':'')+p.name).join('  ⚔️  ');
+      const q=finalQuestions[state.finalQuestionIndex%finalQuestions.length],sides=activeFinalSides();
+      document.getElementById('final-players').textContent=sides.map(sideName).join('  ⚔️  ');
       document.getElementById('final-question').textContent=q.text;
+      const unit=finalUnit(q);document.getElementById('final-unit').textContent='📏 Antwort bitte in: '+unit;
       document.getElementById('final-countdown').textContent=state.finalSeconds;
-      const myActive=ps.some(p=>p.id===myPlayerId);
+      const mine=myFinalSide(),myActive=sides.includes(mine);
       document.getElementById('final-entry').classList.toggle('hidden',state.finalRevealed||!myActive);
-      document.getElementById('final-answer-input').disabled=state.finalRevealed||Object.hasOwn(state.finalAnswers,myPlayerId);
-      document.getElementById('final-answer-input').placeholder='Zahl schätzen (Einheit laut Frage)';
+      document.getElementById('final-answer-input').disabled=state.finalRevealed||Object.hasOwn(state.finalAnswers,mine);
+      document.getElementById('final-answer-input').placeholder='Schätzung in '+unit;
       document.getElementById('final-reveal-btn').classList.toggle('hidden',!amLeader()||state.finalRevealed);
       const out=document.getElementById('final-outcome');
-      out.textContent=state.finalRevealed?`Richtige Antwort: ${q.answer} | ${ps.map(p=>p.name+': '+(state.finalAnswers[p.id]??'keine Antwort')).join(' | ')} | ${state.finalWinner?'🏆 '+ps.find(p=>p.id===state.finalWinner)?.name+' gewinnt!':'Unentschieden – neue Schätzfrage!'}!`:Object.keys(state.finalAnswers).length+' von '+ps.length+' Schätzungen abgegeben';
+      if(state.finalRevealed){
+        const estimates=sides.map(id=>`${sideName(id)}: ${state.finalAnswers[id]??'keine Antwort'} ${unit}`).join(' | ');
+        out.innerHTML=`<div class="rounded-2xl p-5 border border-amber-500/40 bg-amber-500/10"><div class="text-sm text-slate-300 mb-3">Richtige Antwort: ${esc(q.answer)}</div><div class="text-sm text-slate-300 mb-4">${esc(estimates)}</div>${state.finalWinner?`<div class="text-5xl mb-3">👑🏆👑</div><div class="text-3xl md:text-4xl text-amber-400 font-extrabold">EPISCHER SIEG!</div><div class="text-xl text-white mt-2">${esc(state.finalWinnerName).toUpperCase()} GEWINNT!</div>`:'<div class="text-amber-300 font-bold">Unentschieden – Entscheidungsfrage!</div>'}</div>`;
+      }else out.textContent=Object.keys(state.finalAnswers).length+' von '+sides.length+' Team-Schätzungen abgegeben';
       document.getElementById('final-next-btn').classList.toggle('hidden',!amLeader()||!state.finalRevealed||!!state.finalWinner);
     }
-    function nextFinalQuestion(){if(state.onlineMode&&!state.isHost){if(amLeader())sendHost({type:'LEADER_ACTION',action:'nextFinalQuestion'});return;}state.finalQuestionIndex++;startFinal();}
+    function nextFinalQuestion(){if(state.onlineMode&&!state.isHost){if(amLeader())sendHost({type:'LEADER_ACTION',action:'nextFinalQuestion'});return;}startFinal();}
     // --- PEERJS: Host verwaltet Spielzustand, Einladungslink tritt automatisch bei ---
     let peer = null, conn = null, connections = new Map(), myPlayerId = 'p1', currentScreen = 'lobby';
     const roomStatus = msg => { document.getElementById('connection-status').textContent = msg; };
@@ -1919,7 +1981,7 @@
           if(idx<0) {c.send({type:'ERROR',message:'Alle Charaktere vergeben'});c.close();return;}
           const id = 'guest-'+c.peer.replace(/[^a-z0-9-]/gi,'').slice(-24);
           c.playerId=id;
-          state.players.push({id,name:defaultAvatars[idx].name,avatarIndex:idx,lives:state.startLives,maxLives:state.startLives,isBot:false,team:null,skippedNext:false});
+          state.players.push({id,name:defaultAvatars[idx].name,avatarIndex:idx,lives:state.startLives,maxLives:state.startLives,isBot:false,team:null,skippedNext:false});syncTeamLives();
           c.send({type:'WELCOME',playerId:id}); renderLobbyPlayers();renderLobbyAvatars();broadcastState();
           roomStatus(state.players.length+' Spieler in der Lobby');
         });
@@ -1930,14 +1992,14 @@
           if(data.type==='PROFILE' && currentScreen==='lobby') {
             const idx=Number(data.avatarIndex);
             if(Number.isInteger(idx) && defaultAvatars[idx] && !state.players.some(p=>p.id!==player.id&&p.avatarIndex===idx))player.avatarIndex=idx;
-            player.name=String(data.name||player.name).slice(0,32);player.team=data.team||player.team;
+            player.name=String(data.name||player.name).slice(0,32);player.team=data.team||player.team;syncTeamLives();
             renderLobbyPlayers();renderLobbyAvatars();broadcastState();
           } else if(data.type==='ANSWER' && currentScreen==='game' && state.players[state.activePlayerTurnIndex]?.id===player.id) {
             document.getElementById('player-answer-input').value=String(data.answer||'').slice(0,500);submitPlayerAnswer();
           } else if(data.type==='VOTE' && currentScreen==='voting') recordVote(player.id,data.target);
           else if(data.type==='FINAL_ANSWER' && currentScreen==='final') recordFinalAnswer(player.id,data.answer);
           else if(data.type==='LEADER_ACTION' && player.id===state.leaderId && ['startMatch','forceEndVoting','nextRoundOrGame','returnToLobby','restartMatchSameChars','startVotingPhase','togglePauseGame','revealFinal','nextFinalQuestion'].includes(data.action)) { if(data.action==='revealFinal')revealFinal();else window[data.action](); }
-          else if(data.type==='LEADER_SETTINGS' && player.id===state.leaderId && currentScreen==='lobby') {state.matchTimeMinutes=Math.min(5,Math.max(1,+data.matchTimeMinutes||2));state.timerSeconds=Math.min(60,Math.max(3,+data.timerSeconds||20));state.startLives=Math.min(10,Math.max(1,+data.startLives||3));state.teamsMode=['off','2','3','4','5'].includes(data.teamsMode)?data.teamsMode:'off';state.answerCapture=!!data.answerCapture;broadcastState();}
+          else if(data.type==='LEADER_SETTINGS' && player.id===state.leaderId && currentScreen==='lobby') {state.matchTimeMinutes=Math.min(5,Math.max(1,+data.matchTimeMinutes||2));state.timerSeconds=Math.min(60,Math.max(3,+data.timerSeconds||20));state.startLives=Math.min(10,Math.max(1,+data.startLives||3));state.teamsMode=['off','2','3','4','5'].includes(data.teamsMode)?data.teamsMode:'off';state.answerCapture=!!data.answerCapture;state.finalTimeSetting=[10,15,20,30,45,60].includes(+data.finalTimeSetting)?+data.finalTimeSetting:15;resetTeamLives();broadcastState();}
           else if(data.type==='LEADER_MANAGE' && player.id===state.leaderId && currentScreen==='lobby') {if(data.action==='kick')kickPlayer(data.target,true);if(data.action==='promote')promotePlayer(data.target,true);}
         });
         c.on('close',()=>{connections.delete(c.peer);roomStatus('Ein Mitspieler hat die Verbindung getrennt.');});
@@ -1984,7 +2046,7 @@
       state.activeEditingPlayerIndex=Math.max(0,myIndex);
       if(packet.screen==='lobby') {renderLobbyPlayers();renderLobbyAvatars();updateTeamSelector();if(myIndex>=0)document.getElementById('player-name-input').value=state.players[myIndex].name;}
       if(packet.screen==='game') {
-        const p=state.players[state.activePlayerTurnIndex],q=defaultQuestions[state.currentQuestionIndex%defaultQuestions.length];
+        const p=state.players[state.activePlayerTurnIndex],q=currentQuestion();
         document.getElementById('game-current-player-name').textContent=p?.name||'';
         document.getElementById('active-player-title').textContent=(p?.name||'')+' ist am Zug';
         document.getElementById('game-active-avatar-img').src=(defaultAvatars[p?.avatarIndex]||defaultAvatars[0]).img;
@@ -2000,7 +2062,7 @@
       if(packet.screen==='voting') {renderVotingCards();document.getElementById('voting-timer-display').textContent=formatTime(state.votingTimeRemaining);}
       if(packet.screen==='result') {
         const box=document.getElementById('result-summary-box');box.innerHTML='';
-        state.players.forEach(p=>{const el=document.createElement('div');el.className='p-3 bg-slate-900 rounded-xl';el.textContent=p.name+' – '+ '❤️'.repeat(p.lives);box.appendChild(el);});
+        (teamMode()?[...new Set(state.players.map(p=>p.team).filter(Boolean))].map(t=>({name:teamLabel(t),lives:state.teamLives[t]||0})):state.players).forEach(p=>{const el=document.createElement('div');el.className='p-3 bg-slate-900 rounded-xl';el.textContent=p.name+' – '+ '❤️'.repeat(p.lives);box.appendChild(el);});
       }
       document.getElementById('host-top-controls').classList.toggle('hidden',!amLeader());
       document.getElementById('leader-options-box').classList.toggle('hidden',!amLeader());
@@ -2008,7 +2070,7 @@
       document.getElementById('leader-matchtime-select').value=state.matchTimeMinutes;
       document.getElementById('leader-timer-select').value=state.timerSeconds;
       document.getElementById('leader-lives-select').value=state.startLives;
-      document.getElementById('leader-teams-select').value=state.teamsMode;
+      document.getElementById('leader-teams-select').value=state.teamsMode;document.getElementById('leader-finaltime-select').value=state.finalTimeSetting||15;
       document.getElementById('answer-controls').classList.toggle('hidden',!state.answerCapture);
       renderLobbyPlayers();refreshLeaderUI();
       document.getElementById('leader-options-box').classList.toggle('hidden',!amLeader());
