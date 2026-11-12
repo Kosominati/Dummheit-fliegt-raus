@@ -156,6 +156,12 @@
               <option value="5">5 Herzen</option>
             </select>
           </div>
+        </div>
+      </div>
+
+      <!-- TEAM-AUSWAHL DIREKT UNTER ANFÜHRER-EINSTELLUNGEN -->
+      <div class="mb-4 rounded-xl bg-slate-900 p-3 border border-slate-700">
+        <h4 class="text-sm font-bold text-amber-300 mb-2">🎨 Team-Auswahl</h4>
           <div>
             <label class="block text-xs text-slate-300 mb-1">Teams Modus</label>
             <select id="leader-teams-select" onchange="updateLeaderSettings()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-semibold">
@@ -166,9 +172,8 @@
               <option value="5">5 Teams (Rot, Blau, Grün, Gelb, Lila)</option>
             </select>
           </div>
-        </div>
       </div>
-
+      <div class="mb-4 rounded-xl bg-slate-900 p-3 border border-slate-700"><label class="text-sm font-bold text-amber-300">Antworten speichern?</label><select id="answer-capture-select" onchange="updateLeaderSettings()" class="ml-2 bg-slate-950 rounded-lg p-2 text-sm"><option value="off" selected>Nein – nur mündlich</option><option value="on">Ja – Sprache/Text</option></select><p class="text-xs text-slate-400 mt-1">Nur der Anführer kann diese Einstellung ändern.</p></div>
       <div id="room-panel" class="mb-6 p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 space-y-3">
         <h3 class="font-bold text-indigo-300">🌐 Online-Multiplayer</h3>
         <p id="connection-status" class="text-xs text-slate-300">Erstelle einen Raum und teile den Einladungslink.</p>
@@ -176,7 +181,6 @@
         <p id="online-room-display" class="text-xs text-emerald-300"></p><p id="room-code-label" class="font-mono text-amber-300 text-sm"></p>
         <p class="text-xs text-slate-400">Jeder Freund öffnet den Einladungslink auf seinem eigenen Gerät. Einladungslink öffnen genügt – kein Code nötig. Der Host muss online bleiben.</p>
       </div>
-      <div class="mb-4 rounded-xl bg-slate-900 p-3 border border-slate-700"><label class="text-sm font-bold text-amber-300">Antworten speichern?</label><select id="answer-capture-select" onchange="updateLeaderSettings()" class="ml-2 bg-slate-950 rounded-lg p-2 text-sm"><option value="on">Ja – Sprache/Text</option><option value="off">Nein – nur mündlich</option></select><p class="text-xs text-slate-400 mt-1">Nur der Anführer kann diese Einstellung ändern.</p></div>
       <div id="team-self-box" class="mb-5 hidden"><label class="text-sm text-slate-300 font-bold">Mein Team wählen</label><select id="my-team-select" onchange="chooseMyTeam(this.value)" class="mt-2 w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white"></select></div>
       <!-- ACTION BUTTONS -->
       <div class="flex flex-col sm:flex-row gap-3">
@@ -1544,7 +1548,7 @@
       isHost: true,
       roomId: null,
       onlineMode: false,
-      leaderId: 'p1', answerCapture: true, finalQuestionIndex: 0, finalAnswers: {}, finalSeconds: 15, finalTimeSetting: 15, finalRevealed: false, finalWinner: null, questionDeck: [], finalDeck: [], answerHistory: [], teamLives: {}, finalWinnerName: null
+      leaderId: 'p1', answerCapture: false, finalQuestionIndex: 0, finalAnswers: {}, finalSeconds: 15, finalTimeSetting: 15, finalRevealed: false, finalWinner: null, questionDeck: [], finalDeck: [], answerHistory: [], teamLives: {}, finalWinnerName: null
     };
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -1958,8 +1962,10 @@
       document.getElementById('final-reveal-btn').classList.toggle('hidden',!amLeader()||state.finalRevealed);
       const out=document.getElementById('final-outcome');
       if(state.finalRevealed){
-        const estimates=sides.map(id=>`${sideName(id)}: ${state.finalAnswers[id]??'keine Antwort'} ${unit}`).join(' | ');
-        out.innerHTML=`<div class="rounded-2xl p-5 border border-amber-500/40 bg-amber-500/10"><div class="text-sm text-slate-300 mb-3">Richtige Antwort: ${esc(q.answer)}</div><div class="text-sm text-slate-300 mb-4">${esc(estimates)}</div>${state.finalWinner?`<div class="text-5xl mb-3">👑🏆👑</div><div class="text-3xl md:text-4xl text-amber-400 font-extrabold">EPISCHER SIEG!</div><div class="text-xl text-white mt-2">${esc(state.finalWinnerName).toUpperCase()} GEWINNT!</div>`:'<div class="text-amber-300 font-bold">Unentschieden – Entscheidungsfrage!</div>'}</div>`;
+        const estimates=sides.map(id=>`<div class="rounded-xl border border-slate-600 bg-slate-950/80 p-4 text-left"><div class="text-sm font-bold mb-2" style="color:${teamColors[id]||'#fbbf24'}">${esc(sideName(id))}</div><div class="text-2xl font-extrabold text-white">${Object.hasOwn(state.finalAnswers,id)?esc(state.finalAnswers[id])+' '+esc(unit):'Keine Antwort'}</div></div>`).join('');
+        const winnerPlayers=state.finalWinner?state.players.filter(p=>teamMode()?p.team===state.finalWinner:p.id===state.finalWinner):[];
+        const winnerAvatars=winnerPlayers.map(p=>{const av=defaultAvatars[p.avatarIndex]||defaultAvatars[0];return `<div class="flex flex-col items-center gap-2"><img src="${av.img}" alt="${esc(p.name)}" class="w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover shadow-lg" style="${teamStyle(p)}"><span class="text-sm font-bold text-white">${esc(p.name)}</span></div>`;}).join('');
+        out.innerHTML=`<div class="rounded-2xl p-5 border border-amber-500/40 bg-amber-500/10"><div class="text-sm text-slate-300 mb-3">Richtige Antwort: <strong class="text-white">${esc(q.answer)}</strong></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">${estimates}</div>${state.finalWinner?`<div class="text-5xl mb-3">👑🏆👑</div><div class="text-3xl md:text-4xl text-amber-400 font-extrabold">EPISCHER SIEG!</div><div class="text-xl text-white mt-2">${esc(state.finalWinnerName).toUpperCase()} GEWINNT!</div><div class="flex flex-wrap justify-center gap-5 mt-5">${winnerAvatars}</div>`:'<div class="text-amber-300 font-bold">Unentschieden – Entscheidungsfrage!</div>'}</div>`;
       }else out.textContent=Object.keys(state.finalAnswers).length+' von '+sides.length+' Team-Schätzungen abgegeben';
       document.getElementById('final-next-btn').classList.toggle('hidden',!amLeader()||!state.finalRevealed||!!state.finalWinner);
     }
