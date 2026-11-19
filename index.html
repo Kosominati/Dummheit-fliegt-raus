@@ -266,6 +266,7 @@
       </div>
 
       <!-- ANTWORTEN LISTE FÜR VOTING -->
+      <div id="voting-runoff-notice" class="hidden mb-5 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-center font-bold text-amber-300">⚖️ Unentschieden – 2. Voting! Stimmt erneut zwischen den Gleichplatzierten ab.</div>
       <div id="voting-answers-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 mb-6">
         <!-- Dynamisch gerendert -->
       </div>
@@ -5699,6 +5700,7 @@
       audioActive: false,
       currentAnswers: {},
       votes: {},
+      votingRunoff: 0, runoffCandidates: [],
       hostSolutionsVisible: false,
       isHost: true,
       roomId: null,
@@ -5982,14 +5984,16 @@
     function startVotingPhase() {
       if (state.onlineMode && !state.isHost) {if(amLeader())sendHost({type:'LEADER_ACTION',action:'startVotingPhase'});return;}
       clearInterval(state.matchTimerInterval); clearInterval(state.questionTimerInterval); switchScreen('voting');
-      state.votes = {}; state.ballots = {};
+      state.votes = {}; state.ballots = {}; state.votingRunoff = 0; state.runoffCandidates = [];
       state.players.forEach(p => state.votes[p.id] = 0);
       renderVotingCards(); startVotingTimer(); broadcastState();
     }
     function renderVotingCards() {
       const grid=document.getElementById('voting-answers-grid');
+      const runoffNotice=document.getElementById('voting-runoff-notice');
+      if(runoffNotice)runoffNotice.classList.toggle('hidden',state.votingRunoff!==1);
       const openIds=new Set([...grid.querySelectorAll('details[open]')].map(el=>el.dataset.player));grid.innerHTML='';
-      const entries=teamMode()?aliveTeams().map(t=>({id:t,name:teamLabel(t),players:state.players.filter(p=>p.team===t)})):state.players.filter(p=>p.lives>0).map(p=>({id:p.id,name:p.name,players:[p]}));
+      const entries=(teamMode()?aliveTeams().map(t=>({id:t,name:teamLabel(t),players:state.players.filter(p=>p.team===t)})):state.players.filter(p=>p.lives>0).map(p=>({id:p.id,name:p.name,players:[p]}))).filter(e=>!state.votingRunoff||state.runoffCandidates.includes(e.id));
       const myTeam=state.players.find(p=>p.id===myPlayerId)?.team;
       for(const entry of entries){
         const card=document.createElement('div');card.className='glass rounded-2xl p-4 border border-slate-800 flex flex-col justify-between';
@@ -6031,7 +6035,7 @@
       const p=state.players.find(p=>p.id===voter);
       if(!p||p.lives<=0)return;
       const key=teamMode()?p.team:voter;
-      const targets=teamMode()?aliveTeams():eligiblePlayers().map(x=>x.id);
+      const targets=state.votingRunoff?state.runoffCandidates:(teamMode()?aliveTeams():eligiblePlayers().map(x=>x.id));
       if(!key||state.ballots[key]||key===target||!targets.includes(target))return;
       state.ballots[key]=target;state.votes[target]=(state.votes[target]||0)+1;
       renderVotingCards();broadcastState();
@@ -6041,10 +6045,16 @@
     function forceEndVoting(){
       if(state.onlineMode&&!state.isHost){if(amLeader())sendHost({type:'LEADER_ACTION',action:'forceEndVoting'});return;}
       if(currentScreen==='result')return;
-      clearInterval(state.votingTimerInterval);switchScreen('result');
-      const maxVotes=Math.max(0,...Object.values(state.votes));
-      const candidates=teamMode()?aliveTeams():eligiblePlayers().map(p=>p.id);
+      clearInterval(state.votingTimerInterval);
+      const candidates=state.votingRunoff?state.runoffCandidates:(teamMode()?aliveTeams():eligiblePlayers().map(p=>p.id));
+      const maxVotes=Math.max(0,...candidates.map(id=>state.votes[id]||0));
       const tied=candidates.filter(id=>(state.votes[id]||0)===maxVotes);
+      if(maxVotes>0&&tied.length>1&&state.votingRunoff===0){
+        state.votingRunoff=1;state.runoffCandidates=tied;state.votes={};state.ballots={};
+        state.players.forEach(p=>state.votes[p.id]=0);
+        switchScreen('voting');renderVotingCards();startVotingTimer();broadcastState();return;
+      }
+      switchScreen('result');
       const loser=maxVotes>0&&tied.length===1?tied[0]:null;
       const box=document.getElementById('result-summary-box');box.innerHTML='';
       if(teamMode()){
@@ -6058,10 +6068,10 @@
       }else{
         for(const p of state.players){const isLoser=p.id===loser;if(isLoser)p.lives=Math.max(0,p.lives-1);const row=document.createElement('div');row.className='flex items-center justify-between p-3 rounded-xl border mb-2 bg-slate-900 border-slate-800';row.innerHTML=`<span class="text-xs font-bold">${esc(p.name)} ${isLoser?'– 1 Herz verloren!':''}</span><span>${'❤️'.repeat(p.lives)}${'🖤'.repeat(p.maxLives-p.lives)}</span>`;box.appendChild(row);}
       }
-      document.getElementById('result-headline').textContent=loser?'Das Urteil ist gefallen!':(maxVotes?'Gleichstand – niemand verliert ein Herz!':'Niemand hat Stimmen erhalten!');broadcastState();
+      document.getElementById('result-headline').textContent=loser?'Das Urteil ist gefallen!':(maxVotes?'Auch im 2. Voting unentschieden – niemand verliert ein Herz!':'Niemand hat Stimmen erhalten!');broadcastState();
     }
     function toggleSkip(pid, checked) { if (state.onlineMode && !state.isHost) return; const p = state.players.find(x => x.id === pid); if(p) p.skippedNext = checked; broadcastState(); }
-    function nextRoundOrGame() { if (state.onlineMode && !state.isHost) {if(amLeader())sendHost({type:'LEADER_ACTION',action:'nextRoundOrGame'});return;} state.currentRound++; state.currentAnswers = {}; state.votes = {}; if((teamMode()?(aliveTeams().length===2&&(Object.values(state.teamLives).some(x=>x<state.startLives)||state.teamsMode!=='2')):eligiblePlayers().length===2)) startFinal(); else startMatch(); }
+    function nextRoundOrGame() { if (state.onlineMode && !state.isHost) {if(amLeader())sendHost({type:'LEADER_ACTION',action:'nextRoundOrGame'});return;} state.currentRound++; state.currentAnswers = {}; state.votes = {}; state.votingRunoff=0;state.runoffCandidates=[]; if((teamMode()?(aliveTeams().length===2&&(Object.values(state.teamLives).some(x=>x<state.startLives)||state.teamsMode!=='2')):eligiblePlayers().length===2)) startFinal(); else startMatch(); }
     function returnToLobby() { if (state.onlineMode && !state.isHost) {if(amLeader())sendHost({type:'LEADER_ACTION',action:'returnToLobby'});return;} clearInterval(state.matchTimerInterval); clearInterval(state.questionTimerInterval); clearInterval(state.votingTimerInterval); switchScreen('lobby'); broadcastState(); }
     function restartMatchSameChars() { if (state.onlineMode && !state.isHost) {if(amLeader())sendHost({type:'LEADER_ACTION',action:'restartMatchSameChars'});return;} state.players.forEach(p => { p.lives = state.startLives; p.skippedNext = false; });resetTeamLives();state.questionDeck=[];state.finalDeck=[]; state.currentRound = 1; startMatch(); }
     function amLeader(){return !state.onlineMode || myPlayerId===state.leaderId;}
